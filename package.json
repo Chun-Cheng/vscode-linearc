@@ -16,8 +16,12 @@
   "contributes": {
     "commands": [
       {
-        "command": "linear-sidebar.helloWorld",
+        "command": "linear-sidebar.hello-world",
         "title": "Hello World"
+      },
+      {
+        "command": "linear-sidebar.connect",
+        "title": "Connect to Linear"
       }
     ],
     "viewsContainers": {
@@ -35,10 +39,16 @@
           "id": "linear-issues",
           "name": "Issues",
           "icon": "media/issues.svg",
-          "contextualTitle": "Issues"
+          "contextualTitle": "Issues Contextual Title"
         }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "linear-sidebar",
+        "contents": "[Connect to Linear](command:linear-sidebar.connect) to get started."
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "pnpm run compile",
@@ -59,10 +69,10 @@
     "eslint": "^9.13.0",
     "typescript": "^5.6.3"
   },
-  "extensionDependencies": [
-    "linear.linear-connect"
-  ],
   "dependencies": {
     "@linear/sdk": "^33.0.0"
-  }
+  },
+  "extensionDependencies": [
+    "linear.linear-connect"
+  ]
 }
