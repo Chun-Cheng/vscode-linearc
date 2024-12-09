@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 
 import * as issueViewer from './issueViewer';
 import { linear } from './linear';
-import { Issue } from './issueItem';
+import { IssueItem } from './issueItem';
 import { IssuesProvider } from './issuesProvider';
 
 // This method is called when your extension is activated
@@ -22,8 +22,8 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   const refreshIssues = vscode.commands.registerCommand('linear-sidebar.refresh-issues', () => {
-    vscode.window.showInformationMessage('Refreshing issues...');
-    // issuesProvider.refresh();
+    issuesProvider.refresh();
+    // vscode.window.showInformationMessage('Refreshing issues...');
   });
 
   // views

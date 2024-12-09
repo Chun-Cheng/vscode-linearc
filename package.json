@@ -26,10 +26,7 @@
       {
         "command": "linear-sidebar.refresh-issues",
         "title": "Refresh Issues",
-        "icon": {
-          "light": "resources/light/refresh.svg",
-          "dark": "resources/dark/refresh.svg"
-        }
+        "icon": "$(refresh)"
       },
       {
         "command": "linear-sidebar.show-issue",

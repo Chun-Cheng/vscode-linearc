@@ -19,7 +19,7 @@ export enum IssuePriority {
   Low,
 }
 
-export class Issue extends vscode.TreeItem {
+export class IssueItem extends vscode.TreeItem {
   constructor(
     public readonly status: IssueStatus,
     public readonly priority: IssuePriority,
@@ -33,7 +33,7 @@ export class Issue extends vscode.TreeItem {
 
     // set item icon
     let icon_path: string;
-    if (true) {  // TODO: change this to user_preference.issue_icon === status
+    if (false) {  // TODO: change this to user_preference.issue_icon === status
       const statusIconMap: { [key in IssueStatus]: string } = {
         [IssueStatus.Backlog]:    'status_backlog.svg',
         [IssueStatus.Todo]:       'status_todo.svg',
