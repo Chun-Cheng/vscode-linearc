@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
+import * as issueViewer from './issueViewer';
 import { linear } from './linear';
 import { Issue } from './issueItem';
 import { IssuesProvider } from './issuesProvider';
@@ -14,12 +15,16 @@ export function activate(context: vscode.ExtensionContext) {
   const helloWorld = vscode.commands.registerCommand('linear-sidebar.hello-world', () => {
     vscode.window.showInformationMessage('Hello World from Linear Sidebar!');
   });
+  context.subscriptions.push(helloWorld);
 
   const connect = vscode.commands.registerCommand('linear-sidebar.connect', () => {
     linear.connect();
   });
 
-  context.subscriptions.push(helloWorld);
+  const refreshIssues = vscode.commands.registerCommand('linear-sidebar.refresh-issues', () => {
+    vscode.window.showInformationMessage('Refreshing issues...');
+    // issuesProvider.refresh();
+  });
 
   // views
 
@@ -27,6 +32,9 @@ export function activate(context: vscode.ExtensionContext) {
   let issuesView = vscode.window.createTreeView('linear-issues', {
     treeDataProvider: issuesProvider,
   });
+
+  // issue viewer
+  context = issueViewer.activate(context);
 
   // other initialization
   // prompt the user to connect to Linear => run right after installation completed

@@ -22,6 +22,18 @@
       {
         "command": "linear-sidebar.connect",
         "title": "Connect to Linear"
+      },
+      {
+        "command": "linear-sidebar.refresh-issues",
+        "title": "Refresh Issues",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "linear-sidebar.show-issue",
+        "title": "Show Issue"
       }
     ],
     "viewsContainers": {
@@ -43,10 +55,19 @@
         }
       ]
     },
+    "menus": {
+      "view/title": [
+        {
+          "command": "linear-sidebar.refresh-issues",
+          "when": "view == linear-issues",
+          "group": "navigation"
+        }
+      ]
+    },
     "viewsWelcome": [
       {
-        "view": "linear-sidebar",
-        "contents": "[Connect to Linear](command:linear-sidebar.connect) to get started."
+        "view": "linear-issues",
+        "contents": "Connect to Linear to get started.\n[Connect to Linear](command:linear-sidebar.connect)"
       }
     ]
   },
