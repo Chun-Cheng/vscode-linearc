@@ -1,23 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-export enum IssueStatus {
-  Backlog,
-  Todo,
-  InProgress,
-  InReview,
-  Done,
-  Canceled,
-  Duplicate,
-}
-
-export enum IssuePriority {
-  No_Priority,
-  Urgent,
-  High,
-  Medium,
-  Low,
-}
+import { IssueStatus, IssuePriority } from './linear';
 
 export class IssueItem extends vscode.TreeItem {
   constructor(

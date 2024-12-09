@@ -1,6 +1,24 @@
 import * as vscode from "vscode";
 import { LinearClient } from "@linear/sdk";
 
+export enum IssueStatus {
+  Backlog,
+  Todo,
+  InProgress,
+  InReview,
+  Done,
+  Canceled,
+  Duplicate,
+}
+
+export enum IssuePriority {
+  No_Priority,
+  Urgent,
+  High,
+  Medium,
+  Low,
+}
+
 class Linear {
   linearClient: LinearClient | undefined;
 
@@ -136,6 +154,170 @@ class Linear {
 
   
     return issues["nodes"];
+  }
+
+  async getIssue(issue_id: string) {
+    // check if the user is connected to Linear
+    if (this.linearClient === undefined) {
+      // first chance: prompt the user to connect to Linear
+      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
+      if (selection === 'Connect Linear') {
+        this.connect();
+      }
+
+      // second chance: if the user still hasn't connected, return
+      if (this.linearClient === undefined) {
+        return;
+      }
+    }
+
+    // get data
+    // TODO: optimize this by using the native Linear SDK method
+    const issues = await this.linearClient.issues();
+    for (let i = 0; i < issues["nodes"].length; i++) {
+      if (issues["nodes"][i]["identifier"] === issue_id) {
+        return issues["nodes"][i];
+      }
+    }
+    return undefined;
+  }
+
+  async getUser(user_id: string) {
+    // check if the user is connected to Linear
+    if (this.linearClient === undefined) {
+      // first chance: prompt the user to connect to Linear
+      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
+      if (selection === 'Connect Linear') {
+        this.connect();
+      }
+
+      // second chance: if the user still hasn't connected, return
+      if (this.linearClient === undefined) {
+        return;
+      }
+    }
+
+    // get data
+    const user = await this.linearClient.user(user_id);
+    // TODO: check return data format
+    return user;
+  }
+
+  async getTeam(team_id: string) {
+    // check if the user is connected to Linear
+    if (this.linearClient === undefined) {
+      // first chance: prompt the user to connect to Linear
+      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
+      if (selection === 'Connect Linear') {
+        this.connect();
+      }
+
+      // second chance: if the user still hasn't connected, return
+      if (this.linearClient === undefined) {
+        return;
+      }
+    }
+
+    // get data
+    const team = await this.linearClient.team(team_id);
+    // {
+    //   "autoArchivePeriod": 6,
+    //   "autoClosePeriod": 6,
+    //   "autoCloseStateId": "abcd1234-ab12-ab12-ab12-abcdef123456",
+    //   "color": "#5d85ff",
+    //   "createdAt": "abcd1234-ab12-ab12-ab12-abcdef123456",
+    //   "cycleCalenderUrl": "URL to cycles.ics",
+    //   "cycleCooldownTime": 0,
+    //   "cycleDuration": 2,
+    //   "cycleIssueAutoAssignCompleted": true,
+    //   "cycleIssueAutoAssignStarted": true,
+    //   "cycleLockToActive": false,
+    //   "cycleStartDay": 1,
+    //   "cyclesEnabled": false,
+    //   "defaultIssueEstimate": 1,
+    //   "groupIssueHistory": true,
+    //   "icon": "Chat",
+    //   "id": "abcd1234-ab12-ab12-ab12-abcdef123456",
+    //   "inviteHash": "97216e5157034374",
+    //   "issueCount": 10,
+    //   "issueEstimationAllowZero": true,
+    //   "issueEstimationExtended": false,
+    //   "issueEstimationType": "exponential",
+    //   "issueOrderingNoPriorityFirst": false,
+    //   "issueSortOrderDefaultToBottom": false,
+    //   "key": "MES",
+    //   "name": "Message-exp",
+    //   "private": false,
+    //   "requirePriorityToLeaveTriage": false,
+    //   "scimManaged": false,
+    //   "setIssueSortOrderOnStateChange": "first",
+    //   "slackIssueComments": true,
+    //   "slackIssueStatuses": true,
+    //   "slackNewIssue": true,
+    //   "timezone": "Asia/Taipei",
+    //   "triageEnabled": false,
+    //   "upcomingCycleCount": 2,
+    //   "updatedAt": "2024-00-00T00:00:00.000Z",
+    //   "_defaultIssueState": {
+    //     "id": "abcd1234-ab12-ab12-ab12-abcdef123456"
+    //   },
+    //   "_markedAsDuplicateWorkflowState": {
+    //     "id": "abcd1234-ab12-ab12-ab12-abcdef123456"
+    //   }
+    // }
+    
+    return team["name"];
+  }
+
+  async getStatus(state_id: string) {
+    // check if the user is connected to Linear
+    if (this.linearClient === undefined) {
+      // first chance: prompt the user to connect to Linear
+      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
+      if (selection === 'Connect Linear') {
+        this.connect();
+      }
+
+      // second chance: if the user still hasn't connected, return
+      if (this.linearClient === undefined) {
+        return;
+      }
+    }
+
+    // get data
+    const workflowState = await this.linearClient.workflowState(state_id);
+    // {
+    //   "color": "#0f783c",
+    //   "createdAt": "2024-00-00T00:00:00.000Z",
+    //   "description": "Pull request is being reviewed",
+    //   "id": "abcd1234-ab12-ab12-ab12-abcdef123456",
+    //   "name": "In Review",
+    //   "position": 1002,
+    //   "type": "started",
+    //   "updatedAt": "2024-00-00T00:00:00.000Z",
+    //   "_team": {
+    //     "id": "abcd1234-ab12-ab12-ab12-abcdef123456"
+    //   }
+    // }
+
+    switch (workflowState["name"]) {
+      case "Backlog":
+        return IssueStatus.Backlog;
+      case "Todo":
+        return IssueStatus.Todo;
+      case "In Progress":
+        return IssueStatus.InProgress;
+      case "In Review":
+        return IssueStatus.InReview;
+      case "Done":
+        return IssueStatus.Done;
+      case "Canceled":
+        return IssueStatus.Canceled;
+      case "Duplicate":
+        return IssueStatus.Duplicate;
+      default:
+        return undefined;
+    }
   }
 
 }

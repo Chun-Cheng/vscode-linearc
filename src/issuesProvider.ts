@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
-import { IssueStatus, IssuePriority, IssueItem } from './issueItem';
-import { linear } from './linear';
+import { IssueItem } from './issueItem';
+import { IssueStatus, IssuePriority, linear } from './linear';
 
 // Issues view
 //   team 1
