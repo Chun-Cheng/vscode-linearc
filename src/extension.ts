@@ -3,13 +3,14 @@
 import * as vscode from 'vscode';
 
 import { linear } from './linear';
-// import * as commands from './commands';
-import { IssuesProvider, Issue } from './issuesProvider';
+import { Issue } from './issueItem';
+import { IssuesProvider } from './issuesProvider';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
+  // commands
   const helloWorld = vscode.commands.registerCommand('linear-sidebar.hello-world', () => {
     vscode.window.showInformationMessage('Hello World from Linear Sidebar!');
   });
@@ -20,15 +21,16 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(helloWorld);
 
-  // prompt the user to connect to Linear => run right after installation completed
-  // linear.connect();
-
-  //
+  // views
 
   const issuesProvider = new IssuesProvider();
   let issuesView = vscode.window.createTreeView('linear-issues', {
     treeDataProvider: issuesProvider,
   });
+
+  // other initialization
+  // prompt the user to connect to Linear => run right after installation completed
+  // linear.connect();
 }
 
 // This method is called when your extension is deactivated

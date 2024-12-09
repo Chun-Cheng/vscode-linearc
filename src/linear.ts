@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { LinearClient } from "@linear/sdk";
 
-class LinearProvider {
+class Linear {
   linearClient: LinearClient | undefined;
 
   constructor() {
@@ -56,4 +56,4 @@ class LinearProvider {
 
 }
  
-export const linear = new LinearProvider();
+export const linear = new Linear();

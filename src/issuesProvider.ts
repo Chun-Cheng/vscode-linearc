@@ -1,23 +1,25 @@
 import * as vscode from 'vscode';
 
-// Issues view
-// All: all issues
+import { IssueStatus, Issue } from './issueItem';
 
-export class Issue extends vscode.TreeItem {
-  constructor(
-    public readonly label: string,
-    public readonly collapsibleState?: vscode.TreeItemCollapsibleState
-  ) {
-    super(label, collapsibleState);
-    this.contextValue = 'issue';
-  }
-}
+// Issues view
+//   team 1
+//     my issues
+//       issue 1
+//     active issues
+//     all issues
+//   team 2
+
+// Project view
+//   project 1
+//   project 2
+
 
 export class IssuesProvider implements vscode.TreeDataProvider<Issue> {
   private dataStorage = [
-    new Issue('Issue 1'),
-    new Issue('Issue 2'),
-    new Issue('Issue 3'),
+    new Issue(IssueStatus.Todo, 'URB-1', 'Issue 1'),
+    new Issue(IssueStatus.InProgress, 'URB-2', 'Issue 2'),
+    new Issue(IssueStatus.InReview, 'URB-3', 'Issue 3'),
   ];
 
   private eventEmitter = new vscode.EventEmitter<Issue | undefined | void>();
