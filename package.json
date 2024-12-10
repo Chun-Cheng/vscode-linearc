@@ -17,20 +17,20 @@
     "commands": [
       {
         "command": "linear-sidebar.hello-world",
-        "title": "Hello World"
+        "title": "Linear: Hello World"
       },
       {
         "command": "linear-sidebar.connect",
-        "title": "Connect to Linear"
+        "title": "Linear: Connect to Linear"
       },
       {
         "command": "linear-sidebar.refresh-issues",
-        "title": "Refresh Issues",
+        "title": "Linear: Refresh Issues",
         "icon": "$(refresh)"
       },
       {
         "command": "linear-sidebar.show-issue",
-        "title": "Show Issue"
+        "title": "Linear: Show Issue"
       }
     ],
     "viewsContainers": {
