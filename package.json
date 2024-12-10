@@ -88,7 +88,8 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@linear/sdk": "^33.0.0"
+    "@linear/sdk": "^33.0.0",
+    "marked": "^15.0.3"
   },
   "extensionDependencies": [
     "linear.linear-connect"
