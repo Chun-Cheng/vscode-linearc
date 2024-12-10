@@ -30,6 +30,19 @@ class Linear {
     return this.linearClient !== undefined;
   }
 
+  async connectCheckPrompt() {
+    // check if the user is not connected to Linear
+    if (this.isConnected() === false) {
+      // prompt the user to connect to Linear
+      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
+      if (selection === 'Connect Linear') {
+        this.connect();
+      }
+      return false;
+    }
+    return true;
+  }
+
   async connect() {
     const session = await vscode.authentication.getSession(
       "linear", // Linear VS Code authentication provider ID
@@ -55,21 +68,12 @@ class Linear {
 
   async getMyIssues() {
     // check if the user is connected to Linear
-    if (this.linearClient === undefined) {
-      // first chance: prompt the user to connect to Linear
-      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
-      if (selection === 'Connect Linear') {
-        this.connect();
-      }
-
-      // second chance: if the user still hasn't connected, return
-      if (this.linearClient === undefined) {
-        return;
-      }
+    if (await this.connectCheckPrompt() === false) {
+      return;
     }
 
     // get data
-    const me = await this.linearClient.viewer;
+    const me = await this.linearClient!.viewer;
     const myIssues = await me.assignedIssues();
   
     return myIssues;
@@ -83,21 +87,12 @@ class Linear {
 
   async getIssues() {
     // check if the user is connected to Linear
-    if (this.linearClient === undefined) {
-      // first chance: prompt the user to connect to Linear
-      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
-      if (selection === 'Connect Linear') {
-        this.connect();
-      }
-
-      // second chance: if the user still hasn't connected, return
-      if (this.linearClient === undefined) {
-        return;
-      }
+    if (await this.connectCheckPrompt() === false) {
+      return;
     }
 
     // get data
-    const issues = await this.linearClient.issues();
+    const issues = await this.linearClient!.issues();
     // returned data format:
     // {
     //   "pageInfo": {
@@ -158,22 +153,13 @@ class Linear {
 
   async getIssue(issue_id: string) {
     // check if the user is connected to Linear
-    if (this.linearClient === undefined) {
-      // first chance: prompt the user to connect to Linear
-      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
-      if (selection === 'Connect Linear') {
-        this.connect();
-      }
-
-      // second chance: if the user still hasn't connected, return
-      if (this.linearClient === undefined) {
-        return;
-      }
+    if (await this.connectCheckPrompt() === false) {
+      return;
     }
 
     // get data
     // TODO: optimize this by using the native Linear SDK method
-    const issues = await this.linearClient.issues();
+    const issues = await this.linearClient!.issues();
     for (let i = 0; i < issues["nodes"].length; i++) {
       if (issues["nodes"][i]["identifier"] === issue_id) {
         return issues["nodes"][i];
@@ -184,42 +170,42 @@ class Linear {
 
   async getUser(user_id: string) {
     // check if the user is connected to Linear
-    if (this.linearClient === undefined) {
-      // first chance: prompt the user to connect to Linear
-      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
-      if (selection === 'Connect Linear') {
-        this.connect();
-      }
-
-      // second chance: if the user still hasn't connected, return
-      if (this.linearClient === undefined) {
-        return;
-      }
+    if (await this.connectCheckPrompt() === false) {
+      return;
     }
 
     // get data
-    const user = await this.linearClient.user(user_id);
-    // TODO: check return data format
+    const user = await this.linearClient!.user(user_id);
+    // {
+    //   "active": bool,
+    //   "admin": bool,
+    //   "avatarBackgroundColor": "#abc123",
+    //   "avatarUrl": "URL to get user avatar",
+    //   "createdAt": "2024-00-00T00:00:00.000Z",
+    //   "createdIssueCount": 0,
+    //   "displayName": "username",
+    //   "email": "user email",
+    //   "guest": bool,
+    //   "id": "abcd1234-ab12-ab12-ab12-abcdef123456",
+    //   "initials": "half user name (?)",
+    //   "inviteHash": "abcdefgh12345678",
+    //   "isMe": bool,
+    //   "name": "user full name",
+    //   "timezone": "Asia/Taipei",
+    //   "updatedAt": "2024-00-00T00:00:00.000Z",
+    //   "url": "URL to user profile in Linear web app"
+    // }
     return user;
   }
 
   async getTeam(team_id: string) {
     // check if the user is connected to Linear
-    if (this.linearClient === undefined) {
-      // first chance: prompt the user to connect to Linear
-      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
-      if (selection === 'Connect Linear') {
-        this.connect();
-      }
-
-      // second chance: if the user still hasn't connected, return
-      if (this.linearClient === undefined) {
-        return;
-      }
+    if (await this.connectCheckPrompt() === false) {
+      return;
     }
 
     // get data
-    const team = await this.linearClient.team(team_id);
+    const team = await this.linearClient!.team(team_id);
     // {
     //   "autoArchivePeriod": 6,
     //   "autoClosePeriod": 6,
@@ -266,26 +252,17 @@ class Linear {
     //   }
     // }
     
-    return team["name"];
+    return team;
   }
 
   async getStatus(state_id: string) {
     // check if the user is connected to Linear
-    if (this.linearClient === undefined) {
-      // first chance: prompt the user to connect to Linear
-      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
-      if (selection === 'Connect Linear') {
-        this.connect();
-      }
-
-      // second chance: if the user still hasn't connected, return
-      if (this.linearClient === undefined) {
-        return;
-      }
+    if (await this.connectCheckPrompt() === false) {
+      return;
     }
 
     // get data
-    const workflowState = await this.linearClient.workflowState(state_id);
+    const workflowState = await this.linearClient!.workflowState(state_id);
     // {
     //   "color": "#0f783c",
     //   "createdAt": "2024-00-00T00:00:00.000Z",
@@ -319,6 +296,18 @@ class Linear {
         return undefined;
     }
   }
+
+  // async getLabel(label_id: string) {
+  //   // check if the user is connected to Linear
+  //   if (await this.connectCheckPrompt() === false) {
+  //     return;
+  //   }
+
+  //   // get data
+  //   const label = await this.linearClient!.issueLabel(label_id);
+  //   // TODO: check the returned data format
+  //   return label;
+  // }
 
 }
  

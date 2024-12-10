@@ -11,26 +11,31 @@ import { IssuesProvider } from './issuesProvider';
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
+  // views
+  const issuesProvider = new IssuesProvider();
+  let issuesView = vscode.window.createTreeView('linear-issues', {
+    treeDataProvider: issuesProvider,
+  });
+
   // commands
   const helloWorld = vscode.commands.registerCommand('linear-sidebar.hello-world', () => {
     vscode.window.showInformationMessage('Hello World from Linear Sidebar!');
   });
   context.subscriptions.push(helloWorld);
 
-  const connect = vscode.commands.registerCommand('linear-sidebar.connect', () => {
-    linear.connect();
+  const connect = vscode.commands.registerCommand('linear-sidebar.connect', async () => {
+    await linear.connect();
+    issuesProvider.refresh();
+
+    
+    // debug messages: to check API response format
+    // const user_data = await linear.getUser('01fea490-35cd-4d0b-975f-95dbf92d4d88');
+    // vscode.window.showInformationMessage(JSON.stringify(user_data, null, 4));
   });
 
   const refreshIssues = vscode.commands.registerCommand('linear-sidebar.refresh-issues', () => {
     issuesProvider.refresh();
     // vscode.window.showInformationMessage('Refreshing issues...');
-  });
-
-  // views
-
-  const issuesProvider = new IssuesProvider();
-  let issuesView = vscode.window.createTreeView('linear-issues', {
-    treeDataProvider: issuesProvider,
   });
 
   // issue viewer

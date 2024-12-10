@@ -17,7 +17,7 @@ export class IssueItem extends vscode.TreeItem {
 
     // set item icon
     let icon_path: string;
-    if (false) {  // TODO: change this to user_preference.issue_icon === status
+    if (true) {  // TODO: change this to user_preference.issue_icon === status
       const statusIconMap: { [key in IssueStatus]: string } = {
         [IssueStatus.Backlog]:    'status_backlog.svg',
         [IssueStatus.Todo]:       'status_todo.svg',

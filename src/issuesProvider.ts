@@ -26,6 +26,7 @@ export class IssuesProvider implements vscode.TreeDataProvider<IssueItem> {
     // new IssueItem(IssueStatus.Canceled, IssuePriority.No_Priority, 'URB-6', 'Issue 6'),
     // new IssueItem(IssueStatus.Duplicate, IssuePriority.No_Priority, 'URB-7', 'Issue 7'),
   ];
+  private isLoading: boolean = false;
 
   // private eventEmitter = new vscode.EventEmitter<IssueItem | undefined | void>();
 
@@ -53,28 +54,39 @@ export class IssuesProvider implements vscode.TreeDataProvider<IssueItem> {
 
 
   public async refresh() {
+    this.isLoading = true;
+    this.updateView();
+
     const data = await linear.getIssues();
     // vscode.window.showInformationMessage(`${JSON.stringify(data, null, 4)}`);
     if (!data) {
       this.dataStorage = [];
+      this.isLoading = false;
+      this.updateView();
       return;
     }
-    this.dataStorage = data.map((issue: any) => {
-      return new IssueItem(
-        IssueStatus.Backlog,
-        // priority
-        issue["priority"] === 1 ? IssuePriority.Urgent :
+    this.dataStorage = await Promise.all(data.map(async (issue: any) => {
+      let status = await linear.getStatus(issue["_state"]["id"]);
+      if (status === undefined) {
+        status = IssueStatus.Backlog;
+      }
+
+      const priority = issue["priority"] === 1 ? IssuePriority.Urgent :
         issue["priority"] === 2 ? IssuePriority.High :
         issue["priority"] === 3 ? IssuePriority.Medium :
         issue["priority"] === 4 ? IssuePriority.Low :
-        IssuePriority.No_Priority,
-        // issue_id
-        issue.identifier,
+        IssuePriority.No_Priority;
+
+      return new IssueItem(
+        status,
+        priority,
+        issue.identifier, // issue_id
         issue.title,
       );
-    });
+    }));
 
-    this._onDidChangeTreeData.fire();
+    this.isLoading = false;
+    this.updateView();
   }
   
 }
