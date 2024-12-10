@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { marked } from 'marked';
 
 import { IssuePriority, IssueStatus, linear } from './linear';
 
@@ -414,7 +415,9 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
 
         </div>
         <hr>
-        <p>${issue["description"]}</p>
+        <div>
+          ${marked.parse(issue["description"])}
+        </div>
     </body>
     </html>`;
 };
