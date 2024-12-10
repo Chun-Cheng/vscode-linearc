@@ -43,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // other initialization
   // prompt the user to connect to Linear => run right after installation completed
-  // linear.connect();
+  linear.connect();
 }
 
 // This method is called when your extension is deactivated
