@@ -123,6 +123,7 @@ class Linear {
     return null;
   };
 
+  // useless
   async getPriorityValues() {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {

@@ -148,51 +148,51 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
 
   // priority
   const priorityId = issue["priority"];
-  let priority: string;
+  let priorityName: string;
   let priorityIconSrc: vscode.Uri;
   switch (priorityId) {
     case 1:
-      priority = "Urgent";
+      priorityName = "Urgent";
       priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_urgent.svg'));
       break;
     case 2:
-      priority = "High";
+      priorityName = "High";
       priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_high.svg'));
       break;
     case 3:
-      priority = "Medium";
+      priorityName = "Medium";
       priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_medium.svg'));
       break;
     case 4:
-      priority = "Low";
+      priorityName = "Low";
       priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_low.svg'));
       break;
     default:
-      priority = "No Priority";
+      priorityName = "No Priority";
       priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_no.svg'));
   }
 
   // assignee
-  let assignee: string;
+  let assigneeName: string;
   let assigneeIconSrc: vscode.Uri;
 
   let assigneeId = issue["_assignee"];
   if (assigneeId === undefined) {
     // no assignee
-    assignee = "-";  // unassigned
+    assigneeName = "-";  // unassigned
     assigneeIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg'));
   } else {
     assigneeId = assigneeId["id"];
     const assigneeData = await linear.getUser(assigneeId);
 
     if (assigneeData === undefined) {  // not found
-      assignee = "-";  // unassigned
+      assigneeName = "-";  // unassigned
       assigneeIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg'));
     } else {  // found successfully
-      assignee = assigneeData["name"];
+      assigneeName = assigneeData["name"];
       assigneeIconSrc = assigneeData["avatarUrl"] !== undefined
         ? webview.asWebviewUri(vscode.Uri.parse(assigneeData["avatarUrl"]))
-        : webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg')); // default icon // TODO: change to user name icon?
+        : webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_yes.svg')); // default icon // TODO: change to user name icon?
     }
   }
 
@@ -311,7 +311,7 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 overflow: hidden;
                 text-overflow: ellipsis;
                 line-height: normal;
-              ">${priority}</span>
+              ">${priorityName}</span>
             </div>
           </div>
 
@@ -352,7 +352,7 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 overflow: hidden;
                 text-overflow: ellipsis;
                 line-height: normal;
-              ">${assignee}</span>
+              ">${assigneeName}</span>
             </div>
           </div>
 
