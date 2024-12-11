@@ -15,6 +15,9 @@ import { IssueStatus, IssuePriority, linear } from './linear';
 //   project 1
 //   project 2
 
+// status bar
+//   show issue id of the current branch
+
 
 export class IssuesProvider implements vscode.TreeDataProvider<IssueItem> {
   private dataStorage: IssueItem[] = [

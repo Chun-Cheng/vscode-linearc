@@ -183,7 +183,7 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
       break;
     default:
       priority = "No Priority";
-      priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_no_priority.svg'));
+      priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_no.svg'));
   }
 
   // assignee
@@ -193,18 +193,20 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
   let assigneeId = issue["_assignee"];
   if (assigneeId === undefined) {
     // no assignee
-    assignee = "Assignee";  // unassigned
+    assignee = "-";  // unassigned
     assigneeIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg'));
   } else {
     assigneeId = assigneeId["id"];
     const assigneeData = await linear.getUser(assigneeId);
 
     if (assigneeData === undefined) {  // not found
-      assignee = "Assignee";  // unassigned
+      assignee = "-";  // unassigned
       assigneeIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg'));
     } else {  // found successfully
       assignee = assigneeData["name"];
-      assigneeIconSrc = webview.asWebviewUri(vscode.Uri.parse(assigneeData["avatarUrl"] || ''));
+      assigneeIconSrc = assigneeData["avatarUrl"] !== undefined
+        ? webview.asWebviewUri(vscode.Uri.parse(assigneeData["avatarUrl"]))
+        : webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg')); // default icon // TODO: change to user name icon?
     }
   }
 
@@ -325,13 +327,13 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
 
           <!-- assignee -->
           <div data-menu-open="false" style="
-            min-width: 32px;
+            min-width: 14px;
             display: inline-flex;
             flex: initial;
             flex-direction: row;
           ">
             <div role="combobox" type="button" style="
-              min-width: 32px;
+              min-width: 14px;
               max-width: 100%;
               align-items: center;
               position: relative;
@@ -352,7 +354,6 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 <img style="
                   width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
                   height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  border-radius: 50%;
                 " src="${assigneeIconSrc}">
               </span>
               <span style="

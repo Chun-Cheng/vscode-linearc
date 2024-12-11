@@ -17,7 +17,8 @@ export class IssueItem extends vscode.TreeItem {
 
     // set item icon
     let icon_path: string;
-    if (true) {  // TODO: change this to user_preference.issue_icon === status
+    const iconConfig = vscode.workspace.getConfiguration('linear-sidebar').get('issue-item-icon');
+    if (iconConfig === "status") {
       const statusIconMap: { [key in IssueStatus]: string } = {
         [IssueStatus.Backlog]:    'status_backlog.svg',
         [IssueStatus.Todo]:       'status_todo.svg',
@@ -29,7 +30,7 @@ export class IssueItem extends vscode.TreeItem {
       };
       icon_path = path.join(__dirname, '..', 'media', statusIconMap[status] || '');
 
-    } else if (true) {  // user_preference.issue_icon === priority
+    } else if (iconConfig === "priority") {
       const priorityIconMap: { [key in IssuePriority]: string } = {
         [IssuePriority.Urgent]:      'priority_urgent.svg',
         [IssuePriority.High]:        'priority_high.svg',
@@ -39,9 +40,9 @@ export class IssueItem extends vscode.TreeItem {
       };
       icon_path = path.join(__dirname, '..', 'media', priorityIconMap[priority] || '');
 
-    } else if (true) {  // user_preference.issue_icon === assignee
-      icon_path = '';
-    } else {  // user_preference.issue_icon === no_icon
+    } else if (iconConfig === "assignee") {
+      icon_path = '';  // TODO: implement assignee icon
+    } else {  // none
       icon_path = '';
     }
     
@@ -52,6 +53,7 @@ export class IssueItem extends vscode.TreeItem {
 
     this.id = issue_id;  // TODO: change it to avoid conflict, or just remove it.
     this.description = title;  // set the issue title as the TreeView item description
+    this.tooltip = `${issue_id}: ${title}`;
     this.command = {
       command: 'linear-sidebar.show-issue',
       title: 'Show Issue',

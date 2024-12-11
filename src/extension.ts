@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 
 import * as issueViewer from './issueViewer';
-import { linear } from './linear';
+import { IssuePriority, linear } from './linear';
 import { IssueItem } from './issueItem';
 import { IssuesProvider } from './issuesProvider';
 
@@ -36,6 +36,15 @@ export function activate(context: vscode.ExtensionContext) {
   const refreshIssues = vscode.commands.registerCommand('linear-sidebar.refresh-issues', () => {
     issuesProvider.refresh();
     // vscode.window.showInformationMessage('Refreshing issues...');
+  });
+
+  // when user settings is changed
+  vscode.workspace.onDidChangeConfiguration(event => {
+    // issue-item-icon setting changed => refresh the issues view
+    let affected = event.affectsConfiguration("linear-sidebar.issue-item-icon");
+    if (affected) {
+        issuesProvider.refresh();
+    }
   });
 
   // issue viewer
