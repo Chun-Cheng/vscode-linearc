@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { marked } from 'marked';
+import { Issue } from '@linear/sdk';
 
 import { linear } from './linear';
 
@@ -88,9 +89,9 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
   const mediaPath = vscode.Uri.joinPath(extensionUri, 'media');
 
   // TODO: get issue data (title, description, status, priority, assignee, estimate, project, milestone, labels, comments, reactions, etc.)
-  let issue: any = undefined;
+  let issue: Issue | undefined = undefined;
   try {
-    issue = await linear.getIssueByIdentifier(issue_id);
+    issue = await linear.getIssueByIdentifier(issue_id) || undefined;
   } catch (e) {
     return `<!DOCTYPE html>
       <html lang="en">
@@ -123,31 +124,31 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
   }
 
   // status
-  const statusRowData = await linear.getWorkflowStateById(issue._state.id);
-  let statusName: string = statusRowData ? statusRowData.name : "Unknown";
+  const issueState = await issue.state;
+  let statusName: string = issueState ? issueState.name : "Unknown";
   let statusIconSrc: vscode.Uri;
-  if (!statusRowData) {
+  if (!issueState) {
     statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_canceled.svg'));  // unknown
-  } else if (statusRowData.type === "triage") {
+  } else if (issueState.type === "triage") {
     statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_triage.svg'));
-  } else if (statusRowData.type === "backlog") {
+  } else if (issueState.type === "backlog") {
     statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_backlog.svg'));
-  } else if (statusRowData.type === "unstarted") {
+  } else if (issueState.type === "unstarted") {
     statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_todo.svg'));
-  } else if (statusRowData.type === "started" && statusRowData.name === "In Progress") {
+  } else if (issueState.type === "started" && issueState.name === "In Progress") {
     statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_in_progress.svg'));
-  } else if (statusRowData.type === "started" && statusRowData.name === "In Review") {
+  } else if (issueState.type === "started" && issueState.name === "In Review") {
     statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_in_review.svg'));
-  } else if (statusRowData.type === "completed") {
+  } else if (issueState.type === "completed") {
     statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_done.svg'));
-  } else if (statusRowData.type === "canceled") {
+  } else if (issueState.type === "canceled") {
     statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_canceled.svg'));
   } else {
     statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_canceled.svg'));  // unknown
   }
 
   // priority
-  const priorityId = issue["priority"];
+  const priorityId = issue.priority;
   let priorityName: string;
   let priorityIconSrc: vscode.Uri;
   switch (priorityId) {
@@ -176,41 +177,33 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
   let assigneeName: string;
   let assigneeIconSrc: vscode.Uri;
 
-  let assigneeId = issue["_assignee"];
-  if (assigneeId === undefined) {
+  let assignee = await issue.assignee;
+  if (assignee === undefined) {
     // no assignee
     assigneeName = "-";  // unassigned
     assigneeIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg'));
   } else {
-    assigneeId = assigneeId["id"];
-    const assigneeData = await linear.getUser(assigneeId);
-
-    if (assigneeData === undefined) {  // not found
+    if (assignee === undefined) {  // not found
       assigneeName = "-";  // unassigned
       assigneeIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg'));
     } else {  // found successfully
-      assigneeName = assigneeData["name"];
-      assigneeIconSrc = assigneeData["avatarUrl"] !== undefined
-        ? webview.asWebviewUri(vscode.Uri.parse(assigneeData["avatarUrl"]))
+      assigneeName = assignee["name"];
+      assigneeIconSrc = assignee["avatarUrl"] !== undefined
+        ? webview.asWebviewUri(vscode.Uri.parse(assignee["avatarUrl"]))
         : webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_yes.svg')); // default icon // TODO: change to user name icon?
     }
   }
 
   // estimate
-  const estimate = issue["estimate"] || -1;  // no estimate
+  const estimate = issue.estimate;
   const estimateIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'estimate.svg'));
   
   // labels
-  const labelIds = issue["labelIds"];
-  let labels: string[] = [];
+  const labels = await issue.labels();  // TODO: implement this
   
   
-  // TODO: convert description from markdown to HTML
 
   
-
-  // And get the special URI to use with the webview
-  // const catGifSrc = webview.asWebviewUri(mediaPath);
 
   // return page content
   return `<!DOCTYPE html>
@@ -396,7 +389,7 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 overflow: hidden;
                 text-overflow: ellipsis;
                 line-height: normal;
-              ">${estimate === -1 ? "-" : estimate}</span>
+              ">${estimate === null ? "-" : estimate}</span>
             </div>
           </div>
 

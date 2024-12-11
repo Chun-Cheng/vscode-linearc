@@ -36,7 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const debug = vscode.commands.registerCommand('linear-sidebar.debug', async () => {
     const debug_data = await linear.getPriorityValues();
-    vscode.window.showInformationMessage(`workflow states:\n${JSON.stringify(debug_data, null, 4)}`);
+    vscode.window.showInformationMessage(`${JSON.stringify(debug_data, null, 4)}`);
   });
   context.subscriptions.push(debug);
 

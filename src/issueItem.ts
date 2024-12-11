@@ -12,6 +12,9 @@ export class IssueItem extends vscode.TreeItem {
     public readonly title: string,
     // public readonly collapsibleState?: vscode.TreeItemCollapsibleState
   ) {
+    
+
+
     // super(label, collapsibleState);
     super(issue_id, undefined);
     // this.contextValue = 'issue';

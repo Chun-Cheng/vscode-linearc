@@ -62,11 +62,6 @@ export class IssuesProvider implements vscode.TreeDataProvider<IssueItem> {
       return;
     }
     this.data = await Promise.all(data.map(async (issue: any) => {
-      // let status = await linear.getStatus(issue["_state"]["id"]);
-      // if (status === undefined) {
-      //   status = IssueStatus.Backlog;
-      // }
-      // TODO: change the status type
       let status: WorkflowState | undefined = undefined;
       if (issue._state.id !== undefined) {
         status = await linear.getWorkflowStateById(issue._state.id) || undefined;
