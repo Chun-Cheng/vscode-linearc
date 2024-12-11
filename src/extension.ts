@@ -2,10 +2,9 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-import * as issueViewer from './issueViewer';
-import { IssuePriority, linear } from './linear';
-import { IssueItem } from './issueItem';
-import { IssuesProvider } from './issuesProvider';
+import * as issueViewer from './issue_viewer';
+import { linear } from './linear';
+import { IssuesProvider } from './issues_provider';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -26,17 +25,20 @@ export function activate(context: vscode.ExtensionContext) {
   const connect = vscode.commands.registerCommand('linear-sidebar.connect', async () => {
     await linear.connect();
     issuesProvider.refresh();
-
-    
-    // debug messages: to check API response format
-    // const user_data = await linear.getUser('01fea490-35cd-4d0b-975f-95dbf92d4d88');
-    // vscode.window.showInformationMessage(JSON.stringify(user_data, null, 4));
   });
+  context.subscriptions.push(connect);
 
   const refreshIssues = vscode.commands.registerCommand('linear-sidebar.refresh-issues', () => {
     issuesProvider.refresh();
     // vscode.window.showInformationMessage('Refreshing issues...');
   });
+  context.subscriptions.push(refreshIssues);
+
+  const debug = vscode.commands.registerCommand('linear-sidebar.debug', async () => {
+    const debug_data = await linear.getWorkflowStates();
+    vscode.window.showInformationMessage(`workflow states:\n${JSON.stringify(debug_data, null, 4)}`);
+  });
+  context.subscriptions.push(debug);
 
   // when user settings is changed
   vscode.workspace.onDidChangeConfiguration(event => {

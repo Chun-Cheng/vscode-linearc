@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { WorkflowState } from '@linear/sdk';
 
-import { IssueStatus, IssuePriority } from './linear';
+import { IssuePriority } from './linear';
 
 export class IssueItem extends vscode.TreeItem {
   constructor(
-    public readonly status: IssueStatus,
+    public readonly status: WorkflowState | undefined,
     public readonly priority: IssuePriority,
     public readonly issue_id: string,
     public readonly title: string,
@@ -19,16 +20,26 @@ export class IssueItem extends vscode.TreeItem {
     let icon_path: string;
     const iconConfig = vscode.workspace.getConfiguration('linear-sidebar').get('issue-item-icon');
     if (iconConfig === "status") {
-      const statusIconMap: { [key in IssueStatus]: string } = {
-        [IssueStatus.Backlog]:    'status_backlog.svg',
-        [IssueStatus.Todo]:       'status_todo.svg',
-        [IssueStatus.InProgress]: 'status_in_progress.svg',
-        [IssueStatus.InReview]:   'status_in_review.svg',
-        [IssueStatus.Done]:       'status_done.svg',
-        [IssueStatus.Canceled]:   'status_cross.svg',
-        [IssueStatus.Duplicate]:  'status_cross.svg',
-      };
-      icon_path = path.join(__dirname, '..', 'media', statusIconMap[status] || '');
+      // select icon according to data
+      let statusIconFileName: string = '';
+      if (status === undefined) {
+        statusIconFileName = '';
+      } else if (status.type === "triage") {
+        statusIconFileName = 'status_triage.svg';
+      } else if (status.type === "backlog") {
+        statusIconFileName = 'status_backlog.svg';
+      } else if (status.type === "unstarted") {
+        statusIconFileName = 'status_todo.svg';
+      } else if (status.type === "started" && status.name === "In Progress") {
+        statusIconFileName = 'status_in_progress.svg';
+      } else if (status.type === "started" && status.name === "In Review") {
+        statusIconFileName = 'status_in_review.svg';
+      } else if (status.type === "completed") {
+        statusIconFileName = 'status_done.svg';
+      } else if (status.type === "canceled") {
+        statusIconFileName = 'status_canceled.svg';
+      }
+      icon_path = path.join(__dirname, '..', 'media', statusIconFileName);
 
     } else if (iconConfig === "priority") {
       const priorityIconMap: { [key in IssuePriority]: string } = {

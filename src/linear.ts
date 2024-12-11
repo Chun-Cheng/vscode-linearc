@@ -1,15 +1,5 @@
 import * as vscode from "vscode";
-import { LinearClient } from "@linear/sdk";
-
-export enum IssueStatus {
-  Backlog,
-  Todo,
-  InProgress,
-  InReview,
-  Done,
-  Canceled,
-  Duplicate,
-}
+import { LinearClient, Issue, Team, User, WorkflowState } from "@linear/sdk";
 
 export enum IssuePriority {
   No_Priority,
@@ -20,14 +10,16 @@ export enum IssuePriority {
 }
 
 class Linear {
-  linearClient: LinearClient | undefined;
+  linearClient: LinearClient | null;
+  me: User | null;
 
   constructor() {
-    this.linearClient = undefined;
+    this.linearClient = null;
+    this.me = null;
   }
 
-  isConnected() {
-    return this.linearClient !== undefined;
+  isConnected() : boolean {
+    return (this.linearClient !== null && this.me !== null);
   }
 
   async connectCheckPrompt() {
@@ -61,29 +53,179 @@ class Linear {
     this.linearClient = new LinearClient({
       accessToken: session.accessToken,
     });
+    this.me = await this.linearClient.viewer;
 
     // emit event to notify the issue provider to refresh the data
     vscode.commands.executeCommand("linear-sidebar.refresh-issues");
   }
 
-  async getMyIssues() {
+  async getMyIssues() : Promise<Issue[] | null> {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {
-      return;
+      return null;
     }
 
     // get data
-    const me = await this.linearClient!.viewer;
-    const myIssues = await me.assignedIssues();
-  
-    return myIssues;
-
-    // if (myIssues.nodes.length) {
-    //   myIssues.nodes.map(issue => console.log(`${me.displayName} has issue: ${issue.title}`));
-    // } else {
-    //   console.log(`${me.displayName} has no issues`);
-    // }
+    try {
+      const myIssues = await this.me!.assignedIssues();
+      return myIssues.nodes;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear.");
+    }
+    return null;
   }
+
+  async getMyTeams() : Promise<Team[] | null> {
+    // check if the user is connected to Linear
+    if (await this.connectCheckPrompt() === false) {
+      return null;
+    }
+
+    // get data
+    try {
+      const myTeams = await this.me!.teams();
+      return myTeams.nodes;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear.");
+    }
+    return null;
+  }
+
+  async getIssueByIdentifier(identifier: string) {
+    // check if the user is connected to Linear
+    if (await this.connectCheckPrompt() === false) {
+      return null;
+    }
+
+    // get data
+    try {
+      const issue = await this.linearClient!.issue(identifier);
+      return issue || null;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear.");
+    }
+    return null;
+  }
+
+  async getWorkflowStates() : Promise<WorkflowState[] | null> {
+    // check if the user is connected to Linear
+    if (await this.connectCheckPrompt() === false) {
+      return null;
+    }
+
+    // get data
+    try {
+      const workflowStates = await this.linearClient!.workflowStates();
+      return workflowStates.nodes;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear.");
+    }
+    return null;
+  };
+
+  async getPriorityValues() {
+    // check if the user is connected to Linear
+    if (await this.connectCheckPrompt() === false) {
+      return null;
+    }
+
+    // get data
+    try {
+      const priorityValues = await this.linearClient!.issuePriorityValues;
+      return priorityValues;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear.");
+    }
+    return null;
+  };
+
+  async getTeamMembers(team: Team) {
+    // check if the user is connected to Linear
+    if (await this.connectCheckPrompt() === false) {
+      return null;
+    }
+
+    // get data
+    try {
+      const teamMembers = await team.members();
+      return teamMembers.nodes;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear.");
+    }
+    return null;
+  };
+
+
+
+  
+
+
+
+
+  
+  async getWorkflowStateById(id: string) {
+    // check if the user is connected to Linear
+    if (await this.connectCheckPrompt() === false) {
+      return null;
+    }
+
+    // get data
+    try {
+      const workflowState = await this.linearClient!.workflowState(id);
+      return workflowState;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear.");
+    }
+    return null;
+  };
+
+  // async getStatus(state_id: string) {
+  //   // check if the user is connected to Linear
+  //   if (await this.connectCheckPrompt() === false) {
+  //     return;
+  //   }
+
+  //   // get data
+  //   const workflowState = await this.linearClient!.workflowState(state_id);
+  //   // {
+  //   //   "color": "#0f783c",
+  //   //   "createdAt": "2024-00-00T00:00:00.000Z",
+  //   //   "description": "Pull request is being reviewed",
+  //   //   "id": "abcd1234-ab12-ab12-ab12-abcdef123456",
+  //   //   "name": "In Review",
+  //   //   "position": 1002,
+  //   //   "type": "started",
+  //   //   "updatedAt": "2024-00-00T00:00:00.000Z",
+  //   //   "_team": {
+  //   //     "id": "abcd1234-ab12-ab12-ab12-abcdef123456"
+  //   //   }
+  //   // }
+
+  //   switch (workflowState["name"]) {
+  //     case "Backlog":
+  //       return IssueStatus.Backlog;
+  //     case "Todo":
+  //       return IssueStatus.Todo;
+  //     case "In Progress":
+  //       return IssueStatus.InProgress;
+  //     case "In Review":
+  //       return IssueStatus.InReview;
+  //     case "Done":
+  //       return IssueStatus.Done;
+  //     case "Canceled":
+  //       return IssueStatus.Canceled;
+  //     case "Duplicate":
+  //       return IssueStatus.Duplicate;
+  //     default:
+  //       return undefined;
+  //   }
+  // }
+
+
+
+
+
+
 
   async getIssues() {
     // check if the user is connected to Linear
@@ -148,24 +290,7 @@ class Linear {
     // }
 
   
-    return issues["nodes"];
-  }
-
-  async getIssue(issue_id: string) {
-    // check if the user is connected to Linear
-    if (await this.connectCheckPrompt() === false) {
-      return;
-    }
-
-    // get data
-    // TODO: optimize this by using the native Linear SDK method
-    const issues = await this.linearClient!.issues();
-    for (let i = 0; i < issues["nodes"].length; i++) {
-      if (issues["nodes"][i]["identifier"] === issue_id) {
-        return issues["nodes"][i];
-      }
-    }
-    return undefined;
+    return issues.nodes;
   }
 
   async getUser(user_id: string) {
@@ -253,48 +378,6 @@ class Linear {
     // }
     
     return team;
-  }
-
-  async getStatus(state_id: string) {
-    // check if the user is connected to Linear
-    if (await this.connectCheckPrompt() === false) {
-      return;
-    }
-
-    // get data
-    const workflowState = await this.linearClient!.workflowState(state_id);
-    // {
-    //   "color": "#0f783c",
-    //   "createdAt": "2024-00-00T00:00:00.000Z",
-    //   "description": "Pull request is being reviewed",
-    //   "id": "abcd1234-ab12-ab12-ab12-abcdef123456",
-    //   "name": "In Review",
-    //   "position": 1002,
-    //   "type": "started",
-    //   "updatedAt": "2024-00-00T00:00:00.000Z",
-    //   "_team": {
-    //     "id": "abcd1234-ab12-ab12-ab12-abcdef123456"
-    //   }
-    // }
-
-    switch (workflowState["name"]) {
-      case "Backlog":
-        return IssueStatus.Backlog;
-      case "Todo":
-        return IssueStatus.Todo;
-      case "In Progress":
-        return IssueStatus.InProgress;
-      case "In Review":
-        return IssueStatus.InReview;
-      case "Done":
-        return IssueStatus.Done;
-      case "Canceled":
-        return IssueStatus.Canceled;
-      case "Duplicate":
-        return IssueStatus.Duplicate;
-      default:
-        return undefined;
-    }
   }
 
   // async getLabel(label_id: string) {

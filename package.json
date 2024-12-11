@@ -37,6 +37,10 @@
         "title": "Linear: Hello World"
       },
       {
+        "command": "linear-sidebar.debug",
+        "title": "Linear: Dev Debug"
+      },
+      {
         "command": "linear-sidebar.connect",
         "title": "Linear: Connect to Linear"
       },

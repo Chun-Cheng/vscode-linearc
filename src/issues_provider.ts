@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
+import { WorkflowState } from '@linear/sdk';
 
 import { IssueItem } from './issueItem';
-import { IssueStatus, IssuePriority, linear } from './linear';
+import { IssuePriority, linear } from './linear';
 
 // Issues view
 //   team 1
@@ -20,15 +21,7 @@ import { IssueStatus, IssuePriority, linear } from './linear';
 
 
 export class IssuesProvider implements vscode.TreeDataProvider<IssueItem> {
-  private dataStorage: IssueItem[] = [
-    // new IssueItem(IssueStatus.Backlog, IssuePriority.Urgent, 'URB-1', 'Issue 1'),
-    // new IssueItem(IssueStatus.Todo, IssuePriority.High, 'URB-2', 'Issue 2'),
-    // new IssueItem(IssueStatus.InProgress, IssuePriority.Medium, 'URB-3', 'Issue 3'),
-    // new IssueItem(IssueStatus.InReview, IssuePriority.Low, 'URB-4', 'Issue 4'),
-    // new IssueItem(IssueStatus.Done, IssuePriority.No_Priority, 'URB-5', 'Issue 5'),
-    // new IssueItem(IssueStatus.Canceled, IssuePriority.No_Priority, 'URB-6', 'Issue 6'),
-    // new IssueItem(IssueStatus.Duplicate, IssuePriority.No_Priority, 'URB-7', 'Issue 7'),
-  ];
+  private data: IssueItem[] = [];
   private isLoading: boolean = false;
 
   // private eventEmitter = new vscode.EventEmitter<IssueItem | undefined | void>();
@@ -41,7 +34,7 @@ export class IssuesProvider implements vscode.TreeDataProvider<IssueItem> {
   }
 
   public getChildren(element?: IssueItem | undefined): vscode.ProviderResult<IssueItem[]> {
-    return Promise.resolve(this.dataStorage);
+    return Promise.resolve(this.data);
   }
 
   private updateView() {
@@ -63,15 +56,20 @@ export class IssuesProvider implements vscode.TreeDataProvider<IssueItem> {
     const data = await linear.getIssues();
     // vscode.window.showInformationMessage(`${JSON.stringify(data, null, 4)}`);
     if (!data) {
-      this.dataStorage = [];
+      this.data = [];
       this.isLoading = false;
       this.updateView();
       return;
     }
-    this.dataStorage = await Promise.all(data.map(async (issue: any) => {
-      let status = await linear.getStatus(issue["_state"]["id"]);
-      if (status === undefined) {
-        status = IssueStatus.Backlog;
+    this.data = await Promise.all(data.map(async (issue: any) => {
+      // let status = await linear.getStatus(issue["_state"]["id"]);
+      // if (status === undefined) {
+      //   status = IssueStatus.Backlog;
+      // }
+      // TODO: change the status type
+      let status: WorkflowState | undefined = undefined;
+      if (issue._state.id !== undefined) {
+        status = await linear.getWorkflowStateById(issue._state.id) || undefined;
       }
 
       const priority = issue["priority"] === 1 ? IssuePriority.Urgent :
@@ -90,8 +88,7 @@ export class IssuesProvider implements vscode.TreeDataProvider<IssueItem> {
 
     this.isLoading = false;
     this.updateView();
-  }
-  
+  }  
 }
 
 

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { marked } from 'marked';
 
-import { IssuePriority, IssueStatus, linear } from './linear';
+import { linear } from './linear';
 
 export function activate(context: vscode.ExtensionContext) {
   // Track the current panel with a webview
@@ -90,7 +90,7 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
   // TODO: get issue data (title, description, status, priority, assignee, estimate, project, milestone, labels, comments, reactions, etc.)
   let issue: any = undefined;
   try {
-    issue = await linear.getIssue(issue_id);
+    issue = await linear.getIssueByIdentifier(issue_id);
   } catch (e) {
     return `<!DOCTYPE html>
       <html lang="en">
@@ -123,41 +123,27 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
   }
 
   // status
-  const statusEnum = await linear.getStatus(issue["_state"]["id"]);
-  let status: string;
+  const statusRowData = await linear.getWorkflowStateById(issue._state.id);
+  let statusName: string = statusRowData ? statusRowData.name : "Unknown";
   let statusIconSrc: vscode.Uri;
-  switch (statusEnum) {
-    case IssueStatus.Backlog:
-      status = "Backlog";
-      statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_backlog.svg'));
-      break;
-    case IssueStatus.Todo:
-      status = "Todo";
-      statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_todo.svg'));
-      break;
-    case IssueStatus.InProgress:
-      status = "In Progress";
-      statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_in_progress.svg'));
-      break;
-    case IssueStatus.InReview:
-      status = "In Review";
-      statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_in_review.svg'));
-      break;
-    case IssueStatus.Done:
-      status = "Done";
-      statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_done.svg'));
-      break;
-    case IssueStatus.Canceled:
-      status = "Canceled";
-      statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_cross.svg'));
-      break;
-    case IssueStatus.Duplicate:
-      status = "Duplicate";
-      statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_cross.svg'));
-      break;
-    default:
-      status = "Unknown";
-      statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_cross.svg'));
+  if (!statusRowData) {
+    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_canceled.svg'));  // unknown
+  } else if (statusRowData.type === "triage") {
+    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_triage.svg'));
+  } else if (statusRowData.type === "backlog") {
+    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_backlog.svg'));
+  } else if (statusRowData.type === "unstarted") {
+    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_todo.svg'));
+  } else if (statusRowData.type === "started" && statusRowData.name === "In Progress") {
+    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_in_progress.svg'));
+  } else if (statusRowData.type === "started" && statusRowData.name === "In Review") {
+    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_in_review.svg'));
+  } else if (statusRowData.type === "completed") {
+    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_done.svg'));
+  } else if (statusRowData.type === "canceled") {
+    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_canceled.svg'));
+  } else {
+    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_canceled.svg'));  // unknown
   }
 
   // priority
@@ -235,7 +221,11 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
         <title>${issue["identifier"]}</title>
     </head>
     <body>
-        <h1>${issue["title"]}</h1>
+        <h1>${
+          issue["title"]
+            ? marked.parse(issue["title"])
+            : "" // no title
+        }</h1>
 
         <div style="
           flex-wrap: wrap;
@@ -281,7 +271,7 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 overflow: hidden;
                 text-overflow: ellipsis;
                 line-height: normal;
-              ">${status}</span>
+              ">${statusName}</span>
             </div>
           </div>
 
@@ -354,6 +344,7 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 <img style="
                   width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
                   height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                  border-radius: 50%;
                 " src="${assigneeIconSrc}">
               </span>
               <span style="
@@ -417,7 +408,11 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
         </div>
         <hr>
         <div>
-          ${marked.parse(issue["description"])}
+          ${
+            issue["description"]
+              ? marked.parse(issue["description"])
+              : "" // no description
+          }
         </div>
     </body>
     </html>`;
