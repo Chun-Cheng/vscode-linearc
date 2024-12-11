@@ -50,10 +50,19 @@ class Linear {
     }
 
     // OAuth2 authentication
-    this.linearClient = new LinearClient({
-      accessToken: session.accessToken,
-    });
-    this.me = await this.linearClient.viewer;
+    try {
+      this.linearClient = new LinearClient({
+        accessToken: session.accessToken,
+      });
+      this.me = await this.linearClient.viewer;
+    } catch (error) {
+      let selection = await vscode.window.showErrorMessage("Failed to connect to Linear. Please log out you Linear account and try again.", "Reconnect");
+      if (selection === "Reconnect") {
+        await vscode.commands.executeCommand("linear-connect.logout");  // log out all linear accounts
+        this.connect(); // reconnect
+      }
+      return;
+    }
 
     // emit event to notify the issue provider to refresh the data
     vscode.commands.executeCommand("linear-sidebar.refresh-issues");
@@ -70,6 +79,7 @@ class Linear {
       const myIssues = await this.me!.assignedIssues();
       return myIssues.nodes;
     } catch (error) {
+      // TODO: remove all these error notification in linear.ts. These error messages to user should be handled at the caller side.
       vscode.window.showErrorMessage("Failed to get data from Linear.");
     }
     return null;
@@ -91,7 +101,7 @@ class Linear {
     return null;
   }
 
-  async getIssueByIdentifier(identifier: string) {
+  async getIssueByIdentifier(identifier: string) : Promise<Issue | null> {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {
       return null;
@@ -100,6 +110,22 @@ class Linear {
     // get data
     try {
       const issue = await this.linearClient!.issue(identifier);
+      return issue || null;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear.");
+    }
+    return null;
+  }
+
+  async getIssueById(id: string) : Promise<Issue | null> {
+    // check if the user is connected to Linear
+    if (await this.connectCheckPrompt() === false) {
+      return null;
+    }
+
+    // get data
+    try {
+      const issue = await this.linearClient!.issue(id);
       return issue || null;
     } catch (error) {
       vscode.window.showErrorMessage("Failed to get data from Linear.");
@@ -179,6 +205,39 @@ class Linear {
     }
     return null;
   };
+
+
+
+
+  async getIssuesByTeam() : Promise<{ [teamId: string]: Issue[] } | null> {
+    if (await this.connectCheckPrompt() === false) {
+      return null;
+    }
+
+    try {
+      // TODO: try to achieve this by using native SDK functions
+      const issues = await this.linearClient!.issues();
+      const issuesByTeam: { [teamId: string]: Issue[] } = {};
+
+      for (const issue of issues.nodes) {
+        const team = await issue.team;
+        if (!team) {
+          continue;
+        }
+        const teamId = team.id;
+        if (!issuesByTeam[teamId]) {
+          issuesByTeam[teamId] = [];
+        }
+        issuesByTeam[teamId].push(issue);
+      }
+
+      return issuesByTeam;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear.");
+    }
+    return null;
+  }
+
 
   // async getStatus(state_id: string) {
   //   // check if the user is connected to Linear

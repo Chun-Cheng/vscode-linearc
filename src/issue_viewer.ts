@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { marked } from 'marked';
-import { Issue } from '@linear/sdk';
+import { Issue, IssueLabel } from '@linear/sdk';
 
 import { linear } from './linear';
 
@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('linear-sidebar.show-issue', async (issue_id: string) => {  // TODO: remove async?
+    vscode.commands.registerCommand('linear-sidebar.show-issue', async (issueIdentifier: string) => {
       const columnToShowIn = vscode.window.activeTextEditor
         ? vscode.window.activeTextEditor.viewColumn
         : undefined;
@@ -18,18 +18,18 @@ export function activate(context: vscode.ExtensionContext) {
         // If we already have a panel, show it in the target column
         currentPanel.reveal(columnToShowIn);
 
-        if (currentPanel.title !== issue_id) { // if the original panel is showing other issue
+        if (currentPanel.title !== issueIdentifier) { // if the original panel is showing other issue
           // update the content
-          currentPanel.title = issue_id;
+          currentPanel.title = issueIdentifier;
           currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
-          currentPanel.webview.html = await getIssueWebviewContent(issue_id, currentPanel.webview, context.extensionUri);
+          currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, currentPanel.webview, context.extensionUri);
         }
 
       } else {
         // Otherwise, create a new panel
         currentPanel = vscode.window.createWebviewPanel(
           'issue', // Identifies the type of the webview. Used internally
-          issue_id, // Title of the panel displayed to the user
+          issueIdentifier, // Title of the panel displayed to the user
           columnToShowIn || vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
           {
             // And restrict the webview to only loading content from the extension's `media` directory.
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
           } // Webview options.
         );
         currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
-        currentPanel.webview.html = await getIssueWebviewContent(issue_id, currentPanel.webview, context.extensionUri);
+        currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, currentPanel.webview, context.extensionUri);
 
         // Reset when the current panel is closed
         currentPanel.onDidDispose(
@@ -82,30 +82,27 @@ function getLoadingWebviewContent() {
     </html>`;
 }
 
-async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview, extensionUri: vscode.Uri) {
-  // TODO: implement this function
-
+async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.Webview, extensionUri: vscode.Uri) {
   // Get path to resource on disk
   const mediaPath = vscode.Uri.joinPath(extensionUri, 'media');
 
   // TODO: get issue data (title, description, status, priority, assignee, estimate, project, milestone, labels, comments, reactions, etc.)
-  let issue: Issue | undefined = undefined;
-  try {
-    issue = await linear.getIssueByIdentifier(issue_id) || undefined;
-  } catch (e) {
-    return `<!DOCTYPE html>
-      <html lang="en">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${issue_id}</title>
-      </head>
-      <body>
-          <h1>Error</h1>
-      </body>
-      </html>`;
-  }
-  
+  const issue: Issue | undefined = await linear.getIssueByIdentifier(issueIdentifier) || undefined;
+  // try {
+  //   issue = await linear.getIssueByIdentifier(issueIdentifier) || undefined;
+  // } catch (e) {
+  //   return `<!DOCTYPE html>
+  //     <html lang="en">
+  //     <head>
+  //         <meta charset="UTF-8">
+  //         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  //         <title>${issueIdentifier}</title>
+  //     </head>
+  //     <body>
+  //         <h1>Error</h1>
+  //     </body>
+  //     </html>`;
+  // }  
 
   if (issue === undefined) {
     // return 404 page
@@ -114,11 +111,11 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${issue_id}</title>
+          <title>${issueIdentifier}</title>
       </head>
       <body>
           <h1>Issue Not Found</h1>
-          <p>Issue <strong>${issue_id}</strong> not found.</p>
+          <p>Issue <strong>${issueIdentifier}</strong> not found.</p>
       </body>
       </html>`;
   }
@@ -126,80 +123,138 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
   // status
   const issueState = await issue.state;
   let statusName: string = issueState ? issueState.name : "Unknown";
-  let statusIconSrc: vscode.Uri;
+  let statusIconSrc: { light: vscode.Uri, dark: vscode.Uri};
   if (!issueState) {
-    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_canceled.svg'));  // unknown
+    statusIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'status_canceled.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'status_canceled.svg'))
+    };  // unknown
   } else if (issueState.type === "triage") {
-    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_triage.svg'));
+    statusIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'status_triage.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'status_triage.svg'))
+    };
   } else if (issueState.type === "backlog") {
-    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_backlog.svg'));
+    statusIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'status_backlog.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'status_backlog.svg'))
+    };
   } else if (issueState.type === "unstarted") {
-    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_todo.svg'));
+    statusIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'status_todo.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'status_todo.svg'))
+    };
   } else if (issueState.type === "started" && issueState.name === "In Progress") {
-    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_in_progress.svg'));
+    statusIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'status_in_progress.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'status_in_progress.svg'))
+    };
   } else if (issueState.type === "started" && issueState.name === "In Review") {
-    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_in_review.svg'));
+    statusIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'status_in_review.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'status_in_review.svg'))
+    };
   } else if (issueState.type === "completed") {
-    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_done.svg'));
+    statusIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'status_done.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'status_done.svg'))
+    };
   } else if (issueState.type === "canceled") {
-    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_canceled.svg'));
+    statusIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'status_canceled.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'status_canceled.svg'))
+    };
   } else {
-    statusIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'status_canceled.svg'));  // unknown
+    statusIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'status_canceled.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'status_canceled.svg'))
+    };  // unknown
   }
 
   // priority
   const priorityId = issue.priority;
   let priorityName: string;
-  let priorityIconSrc: vscode.Uri;
+  let priorityIconSrc: { light: vscode.Uri, dark: vscode.Uri };
   switch (priorityId) {
     case 1:
       priorityName = "Urgent";
-      priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_urgent.svg'));
+      priorityIconSrc = {
+        light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'priority_urgent.svg')),
+        dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'priority_urgent.svg'))
+      };
       break;
     case 2:
       priorityName = "High";
-      priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_high.svg'));
+      priorityIconSrc = {
+        light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'priority_high.svg')),
+        dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'priority_high.svg'))
+      };
       break;
     case 3:
       priorityName = "Medium";
-      priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_medium.svg'));
+      priorityIconSrc = {
+        light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'priority_medium.svg')),
+        dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'priority_medium.svg'))
+      };
       break;
     case 4:
       priorityName = "Low";
-      priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_low.svg'));
+      priorityIconSrc = {
+        light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'priority_low.svg')),
+        dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'priority_low.svg'))
+      };
       break;
     default:
       priorityName = "No Priority";
-      priorityIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'priority_no.svg'));
+      priorityIconSrc = {
+        light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'priority_no.svg')),
+        dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'priority_no.svg'))
+      };
   }
 
   // assignee
   let assigneeName: string;
-  let assigneeIconSrc: vscode.Uri;
+  let assigneeIconSrc: { light: vscode.Uri, dark: vscode.Uri };
 
   let assignee = await issue.assignee;
   if (assignee === undefined) {
     // no assignee
     assigneeName = "-";  // unassigned
-    assigneeIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg'));
+    assigneeIconSrc = {
+      light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'assignee_no.svg')),
+      dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'assignee_no.svg'))
+    };
   } else {
     if (assignee === undefined) {  // not found
       assigneeName = "-";  // unassigned
-      assigneeIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_no.svg'));
+      assigneeIconSrc = {
+        light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'assignee_no.svg')),
+        dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'assignee_no.svg'))
+      };
     } else {  // found successfully
-      assigneeName = assignee["name"];
-      assigneeIconSrc = assignee["avatarUrl"] !== undefined
-        ? webview.asWebviewUri(vscode.Uri.parse(assignee["avatarUrl"]))
-        : webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'assignee_yes.svg')); // default icon // TODO: change to user name icon?
+      assigneeName = assignee.name;
+      assigneeIconSrc = assignee.avatarUrl !== undefined
+        ? {
+          light: webview.asWebviewUri(vscode.Uri.parse(assignee.avatarUrl)),
+          dark: webview.asWebviewUri(vscode.Uri.parse(assignee.avatarUrl))
+        }
+        : {
+          light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'assignee_yes.svg')),
+          dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'assignee_yes.svg'))
+        };; // default icon // TODO: change to user name icon?
     }
   }
 
   // estimate
   const estimate = issue.estimate;
-  const estimateIconSrc = webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'estimate.svg'));
+  const estimateIconSrc = {
+    light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'light', 'estimate.svg')),
+    dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, 'dark', 'estimate.svg'))
+  };
   
   // labels
-  const labels = await issue.labels();  // TODO: implement this
+  const labelsConnection = await issue.labels();  // TODO: implement this
+  const labels = labelsConnection.nodes;
   
   
 
@@ -211,12 +266,12 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${issue["identifier"]}</title>
+        <title>${issue.identifier}</title>
     </head>
     <body>
         <h1>${
           issue["title"]
-            ? marked.parse(issue["title"])
+            ? marked.parse(issue.title)
             : "" // no title
         }</h1>
 
@@ -243,7 +298,7 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
               display: inline-flex;
               vertical-align: top;
               border-radius: 5px;
-              border: 1px solid lch(19 3.54 272);
+              border: 1px solid lch(19 3.54 272); /* TODO: change border color to vscode theme color */
               padding: 2px 8px;
             ">
               <span aria-hidden="true" style="
@@ -254,10 +309,16 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 align-items: center;
                 justify-content: center;
               ">
-                <img style="
+                <img data-theme="light" style="
+                  display: inherit;
                   width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
                   height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                " src="${statusIconSrc}">
+                " src="${statusIconSrc.light}">
+                <img data-theme="dark" style="
+                  display: none;
+                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                " src="${statusIconSrc.dark}">
               </span>
               <span style="
                 white-space: nowrap;
@@ -294,10 +355,16 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 align-items: center;
                 justify-content: center;
               ">
-                <img style="
+                <img data-theme="light" style="
+                  display: inherit;
                   width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
                   height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                " src="${priorityIconSrc}">
+                " src="${priorityIconSrc.light}">
+                <img data-theme="dark" style="
+                  display: none;
+                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                " src="${priorityIconSrc.dark}">
               </span>
               <span style="
                 white-space: nowrap;
@@ -334,11 +401,18 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 align-items: center;
                 justify-content: center;
               ">
-                <img style="
+                <img data-theme="light" style="
+                  display: inherit;
                   width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
                   height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
                   border-radius: 50%;
-                " src="${assigneeIconSrc}">
+                " src="${assigneeIconSrc.light}">
+                <img data-theme="dark" style="
+                  display: none;
+                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                  border-radius: 50%;
+                " src="${assigneeIconSrc.dark}">
               </span>
               <span style="
                 white-space: nowrap;
@@ -379,21 +453,73 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
                 align-items: center;
                 justify-content: center;
               ">
-                <img style="
+                <img data-theme="light" style="
+                  display: inherit;
                   width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
                   height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                " src="${estimateIconSrc}">
+                " src="${estimateIconSrc.light}">
+                <img data-theme="dark" style="
+                  display: none;
+                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                " src="${estimateIconSrc.dark}">
               </span>
               <span style="
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 line-height: normal;
-              ">${estimate === null ? "-" : estimate}</span>
+              ">${estimate ? estimate : "-"}</span>
             </div>
           </div>
 
           <!-- labels -->
+          ${ 
+            labels.reduce((accumulator, label) => {
+              return accumulator + `
+                <div data-menu-open="false" style="
+                  min-width: 32px;
+                  display: inline-flex;
+                  flex: initial;
+                  flex-direction: row;
+                ">
+                  <div role="combobox" type="button" style="
+                    min-width: 32px;
+                    max-width: 100%;
+                    align-items: center;
+                    position: relative;
+                    display: inline-flex;
+                    vertical-align: top;
+                    border-radius: 5px;
+                    border: 1px solid lch(19 3.54 272);
+                    padding: 2px 8px;
+                  ">
+                    <span aria-hidden="true" style="
+                      margin-right: 4px;
+                      display: inline-flex;
+                      flex-grow: 0;
+                      flex-shrink: 0;
+                      align-items: center;
+                      justify-content: center;
+                    ">
+                      <div style="
+                        width: 9px;
+                        height: 9px;
+                        border-radius: 50%;
+                        background-color: ${label.color};
+                      "></div>
+                    </span>
+                    <span style="
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      line-height: normal;
+                    ">${label.name}</span>
+                  </div>
+                </div>
+              `;
+            }, "")
+          }
 
           <!-- cycle -->
 
@@ -403,7 +529,7 @@ async function getIssueWebviewContent(issue_id: string, webview: vscode.Webview,
         <div>
           ${
             issue["description"]
-              ? marked.parse(issue["description"])
+              ? marked.parse(issue.description)
               : "" // no description
           }
         </div>
