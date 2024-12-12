@@ -9,7 +9,20 @@ export function activate(context: vscode.ExtensionContext) {
   let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('linear-sidebar.show-issue', async (issueIdentifier: string) => {
+    vscode.commands.registerCommand('lineboard.show-issue', async (issueIdentifier: string | undefined) => {
+      if (issueIdentifier === undefined) {
+        // prompt the user to enter the issue identifier
+        issueIdentifier = await vscode.window.showInputBox({
+          placeHolder: 'Enter the issue identifier',
+          prompt: 'Enter the issue identifier to show'
+        });
+
+        if (!issueIdentifier) {
+          vscode.window.showErrorMessage('No issue identifier provided.');
+          return;
+        }
+      }
+
       const columnToShowIn = vscode.window.activeTextEditor
         ? vscode.window.activeTextEditor.viewColumn
         : undefined;

@@ -65,7 +65,7 @@ class Linear {
     }
 
     // emit event to notify the issue provider to refresh the data
-    vscode.commands.executeCommand("linear-sidebar.refresh-issues");
+    vscode.commands.executeCommand("lineboard.refresh-issues");
   }
 
   async getMyIssues() : Promise<Issue[] | null> {

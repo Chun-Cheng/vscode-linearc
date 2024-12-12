@@ -1,10 +1,10 @@
 {
-  "name": "linear-sidebar",
-  "displayName": "Linear Sidebar",
+  "name": "lineboard",
+  "displayName": "Lineboard - Linear Sidebar",
   "description": "Easier your workflow with Linear",
   "version": "0.0.1",
   "publisher": "chun-cheng",
-  "repository": "https://github.com/Chun-Cheng/vscode-linear-sidebar",
+  "repository": "https://github.com/Chun-Cheng/vscode-lineboard",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -15,9 +15,9 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Linear Sidebar",
+      "title": "Lineboard",
       "properties": {
-        "linear-sidebar.issue-item-icon": {
+        "lineboard.issue-item-icon": {
           "title": "Issue Item Icon",
           "type": "string",
           "default": "status",
@@ -33,38 +33,38 @@
     },
     "commands": [
       {
-        "command": "linear-sidebar.hello-world",
-        "title": "Linear: Hello World"
+        "command": "lineboard.hello-world",
+        "title": "Lineboard: Hello World"
       },
       {
-        "command": "linear-sidebar.debug",
-        "title": "Linear: Dev Debug"
+        "command": "lineboard.debug",
+        "title": "Lineboard: Dev Debug"
       },
       {
-        "command": "linear-sidebar.connect",
-        "title": "Linear: Connect to Linear"
+        "command": "lineboard.connect",
+        "title": "Lineboard: Connect to Linear"
       },
       {
-        "command": "linear-sidebar.refresh-issues",
-        "title": "Linear: Refresh Issues",
+        "command": "lineboard.refresh-issues",
+        "title": "Lineboard: Refresh Issues",
         "icon": "$(refresh)"
       },
       {
-        "command": "linear-sidebar.show-issue",
-        "title": "Linear: Show Issue"
+        "command": "lineboard.show-issue",
+        "title": "Lineboard: Show Issue"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "linear-sidebar",
-          "title": "Linear",
+          "id": "lineboard",
+          "title": "Lineboard",
           "icon": "media/linear-logo.svg"
         }
       ]
     },
     "views": {
-      "linear-sidebar": [
+      "lineboard": [
         {
           "id": "linear-issues",
           "name": "Issues",
@@ -76,7 +76,7 @@
     "menus": {
       "view/title": [
         {
-          "command": "linear-sidebar.refresh-issues",
+          "command": "lineboard.refresh-issues",
           "when": "view == linear-issues",
           "group": "navigation"
         }
@@ -85,7 +85,7 @@
     "viewsWelcome": [
       {
         "view": "linear-issues",
-        "contents": "Connect to Linear to get started.\n[Connect to Linear](command:linear-sidebar.connect)"
+        "contents": "Connect to Linear to get started.\n[Connect to Linear](command:lineboard.connect)"
       }
     ]
   },

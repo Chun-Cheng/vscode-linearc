@@ -21,7 +21,7 @@ export class IssueItem extends vscode.TreeItem {
 
     // set item icon
     let icon_path: string | { light: string, dark: string };
-    const iconConfig = vscode.workspace.getConfiguration('linear-sidebar').get('issue-item-icon');
+    const iconConfig = vscode.workspace.getConfiguration('lineboard').get('issue-item-icon');
     if (iconConfig === "status") {
       // select icon according to data
       let statusIconFileName: string = '';
@@ -75,7 +75,7 @@ export class IssueItem extends vscode.TreeItem {
     this.description = issue.title;  // set the issue title as the TreeView item description
     this.tooltip = `${issue.identifier}: ${issue.title}`;
     this.command = {
-      command: 'linear-sidebar.show-issue',
+      command: 'lineboard.show-issue',
       title: 'Show Issue',
       arguments: [issue.identifier]
     } // open issue content when the issue item is selected

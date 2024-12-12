@@ -17,24 +17,24 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // commands
-  const helloWorld = vscode.commands.registerCommand('linear-sidebar.hello-world', () => {
+  const helloWorld = vscode.commands.registerCommand('lineboard.hello-world', () => {
     vscode.window.showInformationMessage('Hello World from Linear Sidebar!');
   });
   context.subscriptions.push(helloWorld);
 
-  const connect = vscode.commands.registerCommand('linear-sidebar.connect', async () => {
+  const connect = vscode.commands.registerCommand('lineboard.connect', async () => {
     await linear.connect();
     issuesProvider.refresh();
   });
   context.subscriptions.push(connect);
 
-  const refreshIssues = vscode.commands.registerCommand('linear-sidebar.refresh-issues', () => {
+  const refreshIssues = vscode.commands.registerCommand('lineboard.refresh-issues', () => {
     issuesProvider.refresh();
     // vscode.window.showInformationMessage('Refreshing issues...');
   });
   context.subscriptions.push(refreshIssues);
 
-  const debug = vscode.commands.registerCommand('linear-sidebar.debug', async () => {
+  const debug = vscode.commands.registerCommand('lineboard.debug', async () => {
     const debug_data = await linear.getPriorityValues();
     vscode.window.showInformationMessage(`${JSON.stringify(debug_data, null, 4)}`);
   });
@@ -43,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
   // when user settings is changed
   vscode.workspace.onDidChangeConfiguration(event => {
     // issue-item-icon setting changed => refresh the issues view
-    let affected = event.affectsConfiguration("linear-sidebar.issue-item-icon");
+    let affected = event.affectsConfiguration("lineboard.issue-item-icon");
     if (affected) {
         issuesProvider.refresh();
     }
