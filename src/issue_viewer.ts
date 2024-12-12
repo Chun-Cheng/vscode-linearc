@@ -13,7 +13,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (issueIdentifier === undefined) {
         // prompt the user to enter the issue identifier
         issueIdentifier = await vscode.window.showInputBox({
-          placeHolder: 'Enter the issue identifier',
+          placeHolder: 'LIN-12',
           prompt: 'Enter the issue identifier to show'
         });
 

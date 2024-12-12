@@ -1,6 +1,6 @@
-# linear-sidebar README
+# Lineboard
 
-This is the README for your extension "linear-sidebar". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "Lineboard". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

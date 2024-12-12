@@ -71,7 +71,7 @@ export class IssueItem extends vscode.TreeItem {
     // this.contextValue = 'issue';
     
     this.iconPath = icon_path;
-    this.id = issue.id;
+    // this.id = issue.id;
     this.description = issue.title;  // set the issue title as the TreeView item description
     this.tooltip = `${issue.identifier}: ${issue.title}`;
     this.command = {
@@ -86,15 +86,35 @@ export class IssueItem extends vscode.TreeItem {
 export class TeamItem extends vscode.TreeItem {
   constructor(
     public readonly team: Team,
-    public readonly issues: IssueItem[],
+    public readonly categories: CategoryItem[],
     public readonly collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed
   ) {
     super(team.name, collapsibleState);
-    this.id = team.id;
+    // this.id = team.id;
     this.tooltip = `${team.name}`;
     this.iconPath = {
       light: path.join(__dirname, '..', 'media', 'light', 'teams.svg'),
       dark: path.join(__dirname, '..', 'media', 'light', 'teams.svg')
     };
+  }
+}
+
+export class CategoryItem extends vscode.TreeItem {
+  constructor(
+    public readonly name: string,
+    public readonly issues: IssueItem[],
+    public readonly collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed
+  ) {
+    super(name, collapsibleState);
+    this.tooltip = `${name}`;
+    // this.iconPath = {
+    //   light: path.join(__dirname, '..', 'media', 'light', 'category.svg'),
+    //   dark: path.join(__dirname, '..', 'media', 'light', 'category.svg')
+    // };
+
+    // TODO: if the issues is empty, create a item shows "No issues"
+    // if (issues.length === 0) {
+    //   // ......
+    // }
   }
 }
