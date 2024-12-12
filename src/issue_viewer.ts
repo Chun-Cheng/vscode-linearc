@@ -89,8 +89,13 @@ export function activate(context: vscode.ExtensionContext) {
 function getLoadingWebviewContent() {
   return `<!DOCTYPE html>
     <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="Content-Security-Policy" content="default-src 'none';">
+    </head>
     <body>
-        <p><i>Loading...</i></p>
+      <p><i>Loading...</i></p>
     </body>
     </html>`;
 }
@@ -107,12 +112,13 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
   //   return `<!DOCTYPE html>
   //     <html lang="en">
   //     <head>
-  //         <meta charset="UTF-8">
-  //         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  //         <title>${issueIdentifier}</title>
+  //       <meta charset="UTF-8">
+  //       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  //       <meta http-equiv="Content-Security-Policy" content="default-src 'none';">
+  //       <title>${issueIdentifier}</title>
   //     </head>
   //     <body>
-  //         <h1>Error</h1>
+  //       <h1>Error</h1>
   //     </body>
   //     </html>`;
   // }  
@@ -122,13 +128,14 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
     return `<!DOCTYPE html>
       <html lang="en">
       <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${issueIdentifier}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none';">
+        <title>${issueIdentifier}</title>
       </head>
       <body>
-          <h1>Issue Not Found</h1>
-          <p>Issue <strong>${issueIdentifier}</strong> not found.</p>
+        <h1>Issue Not Found</h1>
+        <p>Issue <strong>${issueIdentifier}</strong> not found.</p>
       </body>
       </html>`;
   }
@@ -277,283 +284,289 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
   return `<!DOCTYPE html>
     <html lang="en">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${issue.identifier}</title>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="Content-Security-Policy" content="
+        default-src 'none';
+        img-src ${webview.cspSource} https:;
+        script-src ${webview.cspSource};
+        style-src ${webview.cspSource} 'unsafe-inline';
+      ">
+      <title>${issue.identifier}</title>
     </head>
     <body>
-        <h1>${
-          issue["title"]
-            ? marked.parse(issue.title)
-            : "" // no title
-        }</h1>
+      <h1>${
+        issue["title"]
+          ? marked.parse(issue.title)
+          : "" // no title
+      }</h1>
 
-        <div style="
-          flex-wrap: wrap;
-          display: flex;
-          padding: 0;
-          padding-bottom: 8px;
-          align-items: center;
-          gap: 6px;
+      <div style="
+        flex-wrap: wrap;
+        display: flex;
+        padding: 0;
+        padding-bottom: 8px;
+        align-items: center;
+        gap: 6px;
+      ">
+        <!-- status -->
+        <div data-menu-open="false" style="
+          min-width: 32px;
+          display: inline-flex;
+          flex: initial;
+          flex-direction: row;
         ">
-          <!-- status -->
-          <div data-menu-open="false" style="
+          <div role="combobox" type="button" style="
             min-width: 32px;
+            max-width: 100%;
+            align-items: center;
+            position: relative;
             display: inline-flex;
-            flex: initial;
-            flex-direction: row;
+            vertical-align: top;
+            border-radius: 5px;
+            border: 1px solid var(--vscode-chat-requestBorder);
+            background-color: var(--vscode-chat-requestBackground);
+            padding: 2px 8px;
           ">
-            <div role="combobox" type="button" style="
-              min-width: 32px;
-              max-width: 100%;
-              align-items: center;
-              position: relative;
+            <span aria-hidden="true" style="
+              margin-right: 4px;
               display: inline-flex;
-              vertical-align: top;
-              border-radius: 5px;
-              border: 1px solid var(--vscode-chat-requestBorder);
-              background-color: var(--vscode-chat-requestBackground);
-              padding: 2px 8px;
+              flex-grow: 0;
+              flex-shrink: 0;
+              align-items: center;
+              justify-content: center;
             ">
-              <span aria-hidden="true" style="
-                margin-right: 4px;
-                display: inline-flex;
-                flex-grow: 0;
-                flex-shrink: 0;
-                align-items: center;
-                justify-content: center;
-              ">
-                <img data-theme="light" style="
-                  display: inherit;
-                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                " src="${statusIconSrc.light}">
-                <img data-theme="dark" style="
-                  display: none;
-                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                " src="${statusIconSrc.dark}">
-              </span>
-              <span style="
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                line-height: normal;
-              ">${statusName}</span>
-            </div>
+              <img data-theme="light" style="
+                display: inherit;
+                width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+              " src="${statusIconSrc.light}">
+              <img data-theme="dark" style="
+                display: none;
+                width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+              " src="${statusIconSrc.dark}">
+            </span>
+            <span style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              line-height: normal;
+            ">${statusName}</span>
           </div>
+        </div>
 
-          <!-- priority -->
-          <div data-menu-open="false" style="
+        <!-- priority -->
+        <div data-menu-open="false" style="
+          min-width: 32px;
+          display: inline-flex;
+          flex: initial;
+          flex-direction: row;
+        ">
+          <div role="combobox" type="button" style="
             min-width: 32px;
+            max-width: 100%;
+            align-items: center;
+            position: relative;
             display: inline-flex;
-            flex: initial;
-            flex-direction: row;
+            vertical-align: top;
+            border-radius: 5px;
+            border: 1px solid var(--vscode-chat-requestBorder);
+            background-color: var(--vscode-chat-requestBackground);
+            padding: 2px 8px;
           ">
-            <div role="combobox" type="button" style="
-              min-width: 32px;
-              max-width: 100%;
-              align-items: center;
-              position: relative;
+            <span aria-hidden="true" style="
+              margin-right: 4px;
               display: inline-flex;
-              vertical-align: top;
-              border-radius: 5px;
-              border: 1px solid var(--vscode-chat-requestBorder);
-              background-color: var(--vscode-chat-requestBackground);
-              padding: 2px 8px;
+              flex-grow: 0;
+              flex-shrink: 0;
+              align-items: center;
+              justify-content: center;
             ">
-              <span aria-hidden="true" style="
-                margin-right: 4px;
-                display: inline-flex;
-                flex-grow: 0;
-                flex-shrink: 0;
-                align-items: center;
-                justify-content: center;
-              ">
-                <img data-theme="light" style="
-                  display: inherit;
-                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                " src="${priorityIconSrc.light}">
-                <img data-theme="dark" style="
-                  display: none;
-                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                " src="${priorityIconSrc.dark}">
-              </span>
-              <span style="
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                line-height: normal;
-              ">${priorityName}</span>
-            </div>
+              <img data-theme="light" style="
+                display: inherit;
+                width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+              " src="${priorityIconSrc.light}">
+              <img data-theme="dark" style="
+                display: none;
+                width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+              " src="${priorityIconSrc.dark}">
+            </span>
+            <span style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              line-height: normal;
+            ">${priorityName}</span>
           </div>
+        </div>
 
-          <!-- assignee -->
-          <div data-menu-open="false" style="
+        <!-- assignee -->
+        <div data-menu-open="false" style="
+          min-width: 14px;
+          display: inline-flex;
+          flex: initial;
+          flex-direction: row;
+        ">
+          <div role="combobox" type="button" style="
             min-width: 14px;
+            max-width: 100%;
+            align-items: center;
+            position: relative;
             display: inline-flex;
-            flex: initial;
-            flex-direction: row;
+            vertical-align: top;
+            border-radius: 5px;
+            border: 1px solid var(--vscode-chat-requestBorder);
+            background-color: var(--vscode-chat-requestBackground);
+            padding: 2px 8px;
           ">
-            <div role="combobox" type="button" style="
-              min-width: 14px;
-              max-width: 100%;
-              align-items: center;
-              position: relative;
+            <span aria-hidden="true" style="
+              margin-right: 4px;
               display: inline-flex;
-              vertical-align: top;
-              border-radius: 5px;
-              border: 1px solid var(--vscode-chat-requestBorder);
-              background-color: var(--vscode-chat-requestBackground);
-              padding: 2px 8px;
+              flex-grow: 0;
+              flex-shrink: 0;
+              align-items: center;
+              justify-content: center;
             ">
-              <span aria-hidden="true" style="
-                margin-right: 4px;
-                display: inline-flex;
-                flex-grow: 0;
-                flex-shrink: 0;
-                align-items: center;
-                justify-content: center;
-              ">
-                <img data-theme="light" style="
-                  display: inherit;
-                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  border-radius: 50%;
-                " src="${assigneeIconSrc.light}">
-                <img data-theme="dark" style="
-                  display: none;
-                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  border-radius: 50%;
-                " src="${assigneeIconSrc.dark}">
-              </span>
-              <span style="
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                line-height: normal;
-              ">${assigneeName}</span>
-            </div>
+              <img data-theme="light" style="
+                display: inherit;
+                width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                border-radius: 50%;
+              " src="${assigneeIconSrc.light}">
+              <img data-theme="dark" style="
+                display: none;
+                width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                border-radius: 50%;
+              " src="${assigneeIconSrc.dark}">
+            </span>
+            <span style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              line-height: normal;
+            ">${assigneeName}</span>
           </div>
+        </div>
 
-          <!-- project -->
+        <!-- project -->
 
-          <!-- milestone -->
+        <!-- milestone -->
 
-          <!-- estimate -->
-          <div data-menu-open="false" style="
+        <!-- estimate -->
+        <div data-menu-open="false" style="
+          min-width: 14px;
+          display: inline-flex;
+          flex: initial;
+          flex-direction: row;
+        ">
+          <div role="combobox" type="button" style="
             min-width: 14px;
+            max-width: 100%;
+            align-items: center;
+            position: relative;
             display: inline-flex;
-            flex: initial;
-            flex-direction: row;
+            vertical-align: top;
+            border-radius: 5px;
+            border: 1px solid var(--vscode-chat-requestBorder);
+            background-color: var(--vscode-chat-requestBackground);
+            padding: 2px 8px;
           ">
-            <div role="combobox" type="button" style="
-              min-width: 14px;
-              max-width: 100%;
-              align-items: center;
-              position: relative;
+            <span aria-hidden="true" style="
+              margin-right: 4px;
               display: inline-flex;
-              vertical-align: top;
-              border-radius: 5px;
-              border: 1px solid var(--vscode-chat-requestBorder);
-              background-color: var(--vscode-chat-requestBackground);
-              padding: 2px 8px;
+              flex-grow: 0;
+              flex-shrink: 0;
+              align-items: center;
+              justify-content: center;
             ">
-              <span aria-hidden="true" style="
-                margin-right: 4px;
-                display: inline-flex;
-                flex-grow: 0;
-                flex-shrink: 0;
-                align-items: center;
-                justify-content: center;
-              ">
-                <img data-theme="light" style="
-                  display: inherit;
-                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                " src="${estimateIconSrc.light}">
-                <img data-theme="dark" style="
-                  display: none;
-                  width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                  height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
-                " src="${estimateIconSrc.dark}">
-              </span>
-              <span style="
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                line-height: normal;
-              ">${estimate ? estimate : "-"}</span>
-            </div>
+              <img data-theme="light" style="
+                display: inherit;
+                width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+              " src="${estimateIconSrc.light}">
+              <img data-theme="dark" style="
+                display: none;
+                width: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+                height: ${vscode.workspace.getConfiguration().get('editor.fontSize')}px;
+              " src="${estimateIconSrc.dark}">
+            </span>
+            <span style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              line-height: normal;
+            ">${estimate ? estimate : "-"}</span>
           </div>
+        </div>
 
-          <!-- labels -->
-          ${ 
-            labels.reduce((accumulator, label) => {
-              return accumulator + `
-                <div data-menu-open="false" style="
+        <!-- labels -->
+        ${ 
+          labels.reduce((accumulator, label) => {
+            return accumulator + `
+              <div data-menu-open="false" style="
+                min-width: 32px;
+                display: inline-flex;
+                flex: initial;
+                flex-direction: row;
+              ">
+                <div role="combobox" type="button" style="
                   min-width: 32px;
+                  max-width: 100%;
+                  align-items: center;
+                  position: relative;
                   display: inline-flex;
-                  flex: initial;
-                  flex-direction: row;
+                  vertical-align: top;
+                  border-radius: 5px;
+                  border: 1px solid var(--vscode-chat-requestBorder);
+                  background-color: var(--vscode-chat-requestBackground);
+                  padding: 2px 8px;
                 ">
-                  <div role="combobox" type="button" style="
-                    min-width: 32px;
-                    max-width: 100%;
-                    align-items: center;
-                    position: relative;
+                  <span aria-hidden="true" style="
+                    margin-right: 4px;
                     display: inline-flex;
-                    vertical-align: top;
-                    border-radius: 5px;
-                    border: 1px solid var(--vscode-chat-requestBorder);
-                    background-color: var(--vscode-chat-requestBackground);
-                    padding: 2px 8px;
+                    flex-grow: 0;
+                    flex-shrink: 0;
+                    align-items: center;
+                    justify-content: center;
                   ">
-                    <span aria-hidden="true" style="
-                      margin-right: 4px;
-                      display: inline-flex;
-                      flex-grow: 0;
-                      flex-shrink: 0;
-                      align-items: center;
-                      justify-content: center;
-                    ">
-                      <div style="
-                        width: 9px;
-                        height: 9px;
-                        border-radius: 50%;
-                        background-color: ${label.color};
-                      "></div>
-                    </span>
-                    <span style="
-                      white-space: nowrap;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                      line-height: normal;
-                    ">${label.name}</span>
-                  </div>
+                    <div style="
+                      width: 9px;
+                      height: 9px;
+                      border-radius: 50%;
+                      background-color: ${label.color};
+                    "></div>
+                  </span>
+                  <span style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    line-height: normal;
+                  ">${label.name}</span>
                 </div>
-              `;
-            }, "")
-          }
+              </div>
+            `;
+          }, "")
+        }
 
-          <!-- cycle -->
+        <!-- cycle -->
 
 
-        </div>
-        <hr style="
-          border-color: var(--vscode-widget-border);
-          border-width: 1px 0 0;
-        ">
-        <div>
-          ${
-            issue["description"]
-              ? marked.parse(issue.description)
-              : "" // no description
-          }
-        </div>
+      </div>
+      <hr style="
+        border-color: var(--vscode-widget-border);
+        border-width: 1px 0 0;
+      ">
+      <div>
+        ${
+          issue["description"]
+            ? marked.parse(issue.description)
+            : "" // no description
+        }
+      </div>
     </body>
     </html>`;
 };
