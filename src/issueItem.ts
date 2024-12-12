@@ -92,6 +92,9 @@ export class TeamItem extends vscode.TreeItem {
     super(team.name, collapsibleState);
     this.id = team.id;
     this.tooltip = `${team.name}`;
-    // this.iconPath = new vscode.ThemeIcon('organization');
+    this.iconPath = {
+      light: path.join(__dirname, '..', 'media', 'light', 'teams.svg'),
+      dark: path.join(__dirname, '..', 'media', 'light', 'teams.svg')
+    };
   }
 }

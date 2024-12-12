@@ -73,6 +73,7 @@ export class IssuesProvider implements vscode.TreeDataProvider<IssueItem | TeamI
       const issues = await Promise.all(issuesByTeam[teamId].map(async issue => new IssueItem(issue, await issue.state)));
 
       // Sort issues by status and updated time
+      // TODO: improve performance
       issues.sort((a, b) => {
         const statusOrder = ["triage", "started", "unstarted", "backlog", "completed", "canceled"];
         const statusA = statusOrder.indexOf(a.state?.type || "");

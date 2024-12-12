@@ -298,7 +298,8 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
               display: inline-flex;
               vertical-align: top;
               border-radius: 5px;
-              border: 1px solid lch(19 3.54 272); /* TODO: change border color to vscode theme color */
+              border: 1px solid var(--vscode-chat-requestBorder);
+              background-color: var(--vscode-chat-requestBackground);
               padding: 2px 8px;
             ">
               <span aria-hidden="true" style="
@@ -344,7 +345,8 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
               display: inline-flex;
               vertical-align: top;
               border-radius: 5px;
-              border: 1px solid lch(19 3.54 272);
+              border: 1px solid var(--vscode-chat-requestBorder);
+              background-color: var(--vscode-chat-requestBackground);
               padding: 2px 8px;
             ">
               <span aria-hidden="true" style="
@@ -390,7 +392,8 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
               display: inline-flex;
               vertical-align: top;
               border-radius: 5px;
-              border: 1px solid lch(19 3.54 272);
+              border: 1px solid var(--vscode-chat-requestBorder);
+              background-color: var(--vscode-chat-requestBackground);
               padding: 2px 8px;
             ">
               <span aria-hidden="true" style="
@@ -442,7 +445,8 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
               display: inline-flex;
               vertical-align: top;
               border-radius: 5px;
-              border: 1px solid lch(19 3.54 272);
+              border: 1px solid var(--vscode-chat-requestBorder);
+              background-color: var(--vscode-chat-requestBackground);
               padding: 2px 8px;
             ">
               <span aria-hidden="true" style="
@@ -491,7 +495,8 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
                     display: inline-flex;
                     vertical-align: top;
                     border-radius: 5px;
-                    border: 1px solid lch(19 3.54 272);
+                    border: 1px solid var(--vscode-chat-requestBorder);
+                    background-color: var(--vscode-chat-requestBackground);
                     padding: 2px 8px;
                   ">
                     <span aria-hidden="true" style="
@@ -525,7 +530,10 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
 
 
         </div>
-        <hr>
+        <hr style="
+          border-color: var(--vscode-widget-border);
+          border-width: 1px 0 0;
+        ">
         <div>
           ${
             issue["description"]
