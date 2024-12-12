@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-import * as issueViewer from './issue_viewer';
+import { showIssue } from './issue_viewer';
 import { linear } from './linear';
 import { IssuesProvider } from './issues_provider';
 
@@ -17,40 +17,52 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // commands
-  const helloWorld = vscode.commands.registerCommand('lineboard.hello-world', () => {
+  const helloWorld = vscode.commands.registerCommand('linearc.hello-world', () => {
     vscode.window.showInformationMessage('Hello World from Linear Sidebar!');
   });
   context.subscriptions.push(helloWorld);
 
-  const connect = vscode.commands.registerCommand('lineboard.connect', async () => {
+  const connect = vscode.commands.registerCommand('linearc.connect', async () => {
     await linear.connect();
     issuesProvider.refresh();
   });
   context.subscriptions.push(connect);
 
-  const refreshIssues = vscode.commands.registerCommand('lineboard.refresh-issues', () => {
+  const refreshIssues = vscode.commands.registerCommand('linearc.refresh-issues', () => {
     issuesProvider.refresh();
-    // vscode.window.showInformationMessage('Refreshing issues...');
   });
   context.subscriptions.push(refreshIssues);
 
-  const debug = vscode.commands.registerCommand('lineboard.debug', async () => {
+  const debug = vscode.commands.registerCommand('linearc.debug', async () => {
     const debug_data = await linear.getPriorityValues();
     vscode.window.showInformationMessage(`${JSON.stringify(debug_data, null, 4)}`);
   });
   context.subscriptions.push(debug);
 
+  // TODO: remove this command from here and package.json
+  const showCategory = vscode.commands.registerCommand('linearc.show-category', async (category: string) => {
+    issuesProvider.showTeamCategory(category);
+  });
+  context.subscriptions.push(showCategory);
+
   // when user settings is changed
   vscode.workspace.onDidChangeConfiguration(event => {
     // issue-item-icon setting changed => refresh the issues view
-    let affected = event.affectsConfiguration("lineboard.issue-item-icon");
+    let affected = event.affectsConfiguration("linearc.issue-item-icon");
     if (affected) {
         issuesProvider.refresh();
     }
   });
 
   // issue viewer
-  context = issueViewer.activate(context);
+
+  // Track the current panel with a webview
+  let currentPanel: vscode.WebviewPanel | undefined = undefined;
+  context.subscriptions.push(
+    vscode.commands.registerCommand('linearc.show-issue', async (issueIdentifier: string | undefined) => {
+      await showIssue(issueIdentifier, context, currentPanel);
+    })
+  );
 
   // other initialization
   // prompt the user to connect to Linear => run right after installation completed

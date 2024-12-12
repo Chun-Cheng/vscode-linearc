@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Issue, Team, WorkflowState } from '@linear/sdk';
 
-import { TeamItem, CategoryItem, IssueItem } from './issueItem';
+import { TeamItem, CategoryItem, IssueItem, MessageItem } from './issues_items';
 import { IssuePriority, linear } from './linear';
 
 // Issues view
@@ -20,26 +20,43 @@ import { IssuePriority, linear } from './linear';
 //   show issue id of the current branch
 
 
-export class IssuesProvider implements vscode.TreeDataProvider<TeamItem | CategoryItem | IssueItem> {
-  private data: (TeamItem | CategoryItem | IssueItem)[] = [];
+export class IssuesProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
+  private data: (vscode.TreeItem)[] = [];
   private isLoading: boolean = false;
+
+  // private teams: Team[] = [];
+  // private categories: string[] = ["My Issues", "Active Issues", "All Issues"];
+  // private issues: { [teamId: string]: Issue[] } = {};
 
   // private eventEmitter = new vscode.EventEmitter<IssueItem | undefined | void>();
 
-  private _onDidChangeTreeData: vscode.EventEmitter<IssueItem | undefined | null | void> = new vscode.EventEmitter<IssueItem | undefined | null | void>();  // event emitter
-  readonly onDidChangeTreeData: vscode.Event<IssueItem | undefined | null | void> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();  // event emitter
+  readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
 
-  public getTreeItem(element: TeamItem | CategoryItem | IssueItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
+  public getTreeItem(element: vscode.TreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
     return element;
   }
 
-  public async getChildren(element?: TeamItem | CategoryItem | IssueItem | undefined): Promise<(TeamItem | CategoryItem | IssueItem)[]> {
+  public async getChildren(element?: vscode.TreeItem | undefined): Promise<(vscode.TreeItem)[]> {
     if (!element) {
-      return this.data.filter(item => item instanceof TeamItem);
+      const teamItems = this.data.filter(item => item instanceof TeamItem);
+      if (teamItems.length === 0) {
+        return [new MessageItem("no-data")];
+      }
+      return teamItems;
     } else if (element instanceof TeamItem) {
-      return element.categories;
+      const catogoryItems = element.categories;
+      if (catogoryItems.length === 0) {
+        return [new MessageItem("no-data")];
+      }
+      return catogoryItems;
     } else if (element instanceof CategoryItem) {
-      return element.issues;
+      // TODO: call for fetching data
+      const issues = element.issues;
+      if (issues.length === 0) {
+        return [new MessageItem("no-data")];
+      }
+      return issues;
     }
     return [];
   }
@@ -62,19 +79,7 @@ export class IssuesProvider implements vscode.TreeDataProvider<TeamItem | Catego
     // teams of user
     const myTeams = await linear.getMyTeams() || [];
 
-    // all issues in teams
-    const issuesByTeam = await linear.getIssuesByTeam();
-    // issues in the team assigned to the user
-    const myIssuesByTeam = await linear.getMyIssuesByTeams();
-    // active issues in the team
-    const activeIssuesByTeam = await linear.getActiveIssuesByTeams();
-
-    if (
-      myTeams === null ||
-      issuesByTeam === null ||
-      myIssuesByTeam === null ||
-      activeIssuesByTeam === null
-    ) {
+    if (myTeams === null) {
       this.data = [];
       this.isLoading = false;
       this.updateView();
@@ -82,54 +87,82 @@ export class IssuesProvider implements vscode.TreeDataProvider<TeamItem | Catego
     }
 
     this.data = await Promise.all(myTeams.map(async (team) => {
-      // const team = await linear.getTeam(teamId);
-      // if (!team) {
-      //   throw new Error(`Team not found.`);
-      // }
-
-      const allIssues = issuesByTeam[team.id] || [];
-      const myIssues = myIssuesByTeam[team.id] || [];
-      const activeIssues = activeIssuesByTeam[team.id] || [];
-
       const categories = [
-        new CategoryItem(
-          "Assigned to me",
-          await Promise.all(myIssues.map(async issue => new IssueItem(issue, await issue.state)))
-        ),
-        new CategoryItem(
-          "Active Issues",
-          await Promise.all(activeIssues.map(async issue => new IssueItem(issue, await issue.state)))
-        ),
-        new CategoryItem(
-          "All Issues",
-          await Promise.all(allIssues.map(async issue => new IssueItem(issue, await issue.state)))
-        ),
+        new CategoryItem("My Issues", team.id, []),
+        new CategoryItem("Active Issues", team.id, []),
+        new CategoryItem("All Issues", team.id, []),
       ];
 
-      // Sort issues by status, priority and updated time
-      // TODO: improve performance
-      // issues.sort((a, b) => {
-      //   const statusOrder = ["triage", "started", "unstarted", "backlog", "completed", "canceled"];
-      //   const statusA = statusOrder.indexOf(a.state?.type || "");
-      //   const statusB = statusOrder.indexOf(b.state?.type || "");
-      //   if (statusA !== statusB) {
-      //     return (statusA - statusB) * 65536;
-      //   }
-
-      //   const priorityOrder = [1, 2, 3, 4, 0];
-      //   const priorityA = priorityOrder.indexOf(a.issue.priority || -1);
-      //   const priorityB = priorityOrder.indexOf(a.issue.priority || -1);
-      //   if (priorityA !== priorityB) {
-      //     return (priorityA - priorityB) * 256;
-      //   }
-
-      //   return new Date(b.issue.updatedAt).getTime() - new Date(a.issue.updatedAt).getTime();
-      // });
+      // TODO: Sort issues by status, priority and updated time, with acceptable performance
 
       return new TeamItem(team, categories);
     }));
 
     this.isLoading = false;
     this.updateView();
-  }  
+  }
+  
+  public async showTeamCategory(teamCategoryId: string) {
+    this.isLoading = true;
+    this.updateView();
+
+    const tokens = teamCategoryId.split('.');
+    if (tokens.length !== 2) {
+      this.isLoading = false;
+      this.updateView();
+      return;
+    }
+    const teamId = tokens[0];
+    const categoryId = tokens[1];
+
+    // get team
+    const team = this.data.find(item => item instanceof TeamItem && item.team.id === teamId) as TeamItem;
+    if (!team) {
+      vscode.window.showErrorMessage(`Team "${teamId}" not found. (showTeamCategory)`);
+      this.isLoading = false;
+      this.updateView();
+      return;
+    }
+
+    // get category
+    const category = team.categories.find(category => category.id === teamCategoryId);
+    if (category === undefined) {
+      vscode.window.showErrorMessage(`Category "${categoryId}" not found. (showTeamCategory)`);
+      this.isLoading = false;
+      this.updateView();
+      return;
+    }
+
+    // expand the category
+    category.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+
+    if (category.issues.length === 0) {
+      // get issues of the category
+
+      // TODO: implement this
+      switch (categoryId) {
+        case 'my-issues':
+          const myTeamIssues = await linear.getMyTeamIssuesById(teamId) || [];
+          category.issues = await Promise.all(myTeamIssues.map(async issue => 
+            new IssueItem(issue, await issue.state, teamId, categoryId))
+          )
+          break;
+        case 'active-issues':
+          const teamActiveIssues = await linear.getTeamActiveIssuesById(teamId) || [];
+          category.issues = await Promise.all(teamActiveIssues.map(async issue => 
+            new IssueItem(issue, await issue.state, teamId, categoryId))
+          )
+          break;
+        case 'all-issues':
+          const teamIssues = await linear.getTeamIssuesById(teamId) || [];
+          category.issues = await Promise.all(teamIssues.map(async issue => 
+            new IssueItem(issue, await issue.state, teamId, categoryId))
+          )
+          break;
+      }
+    }
+
+    this.isLoading = false;
+    this.updateView();
+  }
 }

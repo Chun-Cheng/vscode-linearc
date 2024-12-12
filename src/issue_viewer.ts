@@ -1,86 +1,66 @@
 import * as vscode from 'vscode';
 import { marked } from 'marked';
-import { Issue, IssueLabel } from '@linear/sdk';
+import { Issue } from '@linear/sdk';
 
 import { linear } from './linear';
 
-export function activate(context: vscode.ExtensionContext) {
-  // Track the current panel with a webview
-  let currentPanel: vscode.WebviewPanel | undefined = undefined;
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('lineboard.show-issue', async (issueIdentifier: string | undefined) => {
-      if (issueIdentifier === undefined) {
-        // prompt the user to enter the issue identifier
-        issueIdentifier = await vscode.window.showInputBox({
-          placeHolder: 'LIN-12',
-          prompt: 'Enter the issue identifier to show'
-        });
+export async function showIssue(issueIdentifier: string | undefined, context: vscode.ExtensionContext, currentPanel: vscode.WebviewPanel | undefined) {
+  if (issueIdentifier === undefined) {
+    // prompt the user to enter the issue identifier
+    issueIdentifier = await vscode.window.showInputBox({
+      placeHolder: 'LIN-12',
+      prompt: 'Enter the issue identifier to show'
+    });
 
-        if (!issueIdentifier) {
-          vscode.window.showErrorMessage('No issue identifier provided.');
-          return;
-        }
-      }
+    if (!issueIdentifier) {
+      vscode.window.showErrorMessage('No issue identifier provided.');
+      return;
+    }
+  }
 
-      const columnToShowIn = vscode.window.activeTextEditor
-        ? vscode.window.activeTextEditor.viewColumn
-        : undefined;
+  const columnToShowIn = vscode.window.activeTextEditor
+    ? vscode.window.activeTextEditor.viewColumn
+    : undefined;
 
-      if (currentPanel) {
-        // If we already have a panel, show it in the target column
-        currentPanel.reveal(columnToShowIn);
+  if (currentPanel) {
+    // If we already have a panel, show it in the target column
+    currentPanel.reveal(columnToShowIn);
 
-        if (currentPanel.title !== issueIdentifier) { // if the original panel is showing other issue
-          // update the content
-          currentPanel.title = issueIdentifier;
-          currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
-          currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, currentPanel.webview, context.extensionUri);
-        }
+    if (currentPanel.title !== issueIdentifier) { // if the original panel is showing other issue
+      // update the content
+      currentPanel.title = issueIdentifier;
+      currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
+      currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, currentPanel.webview, context.extensionUri);
+    }
 
-      } else {
-        // Otherwise, create a new panel
-        currentPanel = vscode.window.createWebviewPanel(
-          'issue', // Identifies the type of the webview. Used internally
-          issueIdentifier, // Title of the panel displayed to the user
-          columnToShowIn || vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
-          {
-            // And restrict the webview to only loading content from the extension's `media` directory.
-            localResourceRoots: [
-              vscode.Uri.joinPath(
-                vscode.Uri.file(context.extensionPath), 'media'
-              )
-            ]
-          } // Webview options.
-        );
-        currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
-        currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, currentPanel.webview, context.extensionUri);
+  } else {
+    // Otherwise, create a new panel
+    currentPanel = vscode.window.createWebviewPanel(
+      'issue', // Identifies the type of the webview. Used internally
+      issueIdentifier, // Title of the panel displayed to the user
+      columnToShowIn || vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
+      {
+        // And restrict the webview to only loading content from the extension's `media` directory.
+        localResourceRoots: [
+          vscode.Uri.joinPath(
+            vscode.Uri.file(context.extensionPath), 'media'
+          )
+        ]
+      } // Webview options.
+    );
+    currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
+    currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, currentPanel.webview, context.extensionUri);
 
-        // Reset when the current panel is closed
-        currentPanel.onDidDispose(
-          () => {
-            currentPanel = undefined;
-          },
-          null,
-          context.subscriptions
-        );
-
-        // TODO: remove debug messages
-        // const datas = await linear.getIssues();
-        // if (datas) {
-        //   const data = datas[0];
-        //   const team_id = data["_team"]["id"];
-        //   const team = await linear.getTeam(team_id);
-        //   vscode.window.showInformationMessage(`team:\n${JSON.stringify(team, null, 4)}`);
-        //   const state_id = data["_state"]["id"];
-        //   const state = await linear.getStatus(state_id);
-        //   vscode.window.showInformationMessage(`state:\n${JSON.stringify(state, null, 4)}`);
-        // }
-      }
-    })
-  );
-
-  return context;
+    // Reset when the current panel is closed
+    currentPanel.onDidDispose(
+      () => {
+        currentPanel = undefined;
+      },
+      null,
+      context.subscriptions
+    );
+  }
 };
 
 /**
@@ -105,23 +85,22 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
   const mediaPath = vscode.Uri.joinPath(extensionUri, 'media');
 
   // TODO: get issue data (title, description, status, priority, assignee, estimate, project, milestone, labels, comments, reactions, etc.)
-  const issue: Issue | undefined = await linear.getIssueByIdentifier(issueIdentifier) || undefined;
-  // try {
-  //   issue = await linear.getIssueByIdentifier(issueIdentifier) || undefined;
-  // } catch (e) {
-  //   return `<!DOCTYPE html>
-  //     <html lang="en">
-  //     <head>
-  //       <meta charset="UTF-8">
-  //       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  //       <meta http-equiv="Content-Security-Policy" content="default-src 'none';">
-  //       <title>${issueIdentifier}</title>
-  //     </head>
-  //     <body>
-  //       <h1>Error</h1>
-  //     </body>
-  //     </html>`;
-  // }  
+  const issue: Issue | undefined | null = await linear.getIssueByIdentifier(issueIdentifier);
+
+  if (issue === null) {
+    return `<!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none';">
+        <title>${issueIdentifier}</title>
+      </head>
+      <body>
+        <h1>Error</h1>
+      </body>
+      </html>`;
+  }  
 
   if (issue === undefined) {
     // return 404 page

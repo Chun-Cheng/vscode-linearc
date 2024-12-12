@@ -1,10 +1,10 @@
 {
-  "name": "lineboard",
-  "displayName": "Lineboard - Linear Sidebar",
+  "name": "linearc",
+  "displayName": "LineArc - Linear Sidebar",
   "description": "Easier your workflow with Linear",
   "version": "0.0.1",
   "publisher": "chun-cheng",
-  "repository": "https://github.com/Chun-Cheng/vscode-lineboard",
+  "repository": "https://github.com/Chun-Cheng/vscode-linearc",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -15,9 +15,9 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Lineboard",
+      "title": "LineArc",
       "properties": {
-        "lineboard.issue-item-icon": {
+        "linearc.issue-item-icon": {
           "title": "Issue Item Icon",
           "type": "string",
           "default": "status",
@@ -33,38 +33,42 @@
     },
     "commands": [
       {
-        "command": "lineboard.hello-world",
-        "title": "Lineboard: Hello World"
+        "command": "linearc.hello-world",
+        "title": "LineArc: Hello World"
       },
       {
-        "command": "lineboard.debug",
-        "title": "Lineboard: Dev Debug"
+        "command": "linearc.debug",
+        "title": "LineArc: Dev Debug"
       },
       {
-        "command": "lineboard.connect",
-        "title": "Lineboard: Connect to Linear"
+        "command": "linearc.connect",
+        "title": "LineArc: Connect to Linear"
       },
       {
-        "command": "lineboard.refresh-issues",
-        "title": "Lineboard: Refresh Issues",
+        "command": "linearc.refresh-issues",
+        "title": "LineArc: Refresh Issues",
         "icon": "$(refresh)"
       },
       {
-        "command": "lineboard.show-issue",
-        "title": "Lineboard: Show Issue"
+        "command": "linearc.show-issue",
+        "title": "LineArc: Show Issue"
+      },
+      {
+        "command": "linearc.show-category",
+        "title": "LineArc: Show Category"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "lineboard",
-          "title": "Lineboard",
+          "id": "linearc",
+          "title": "LineArc",
           "icon": "media/linear-logo.svg"
         }
       ]
     },
     "views": {
-      "lineboard": [
+      "linearc": [
         {
           "id": "linear-issues",
           "name": "Issues",
@@ -76,16 +80,22 @@
     "menus": {
       "view/title": [
         {
-          "command": "lineboard.refresh-issues",
+          "command": "linearc.refresh-issues",
           "when": "view == linear-issues",
           "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "linearc.show-category",
+          "when": "false"
         }
       ]
     },
     "viewsWelcome": [
       {
         "view": "linear-issues",
-        "contents": "Connect to Linear to get started.\n[Connect to Linear](command:lineboard.connect)"
+        "contents": "Connect to Linear to get started.\n[Connect to Linear](command:linearc.connect)"
       }
     ]
   },
