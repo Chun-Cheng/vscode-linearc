@@ -4,67 +4,75 @@ import { Issue } from "@linear/sdk";
 
 import { linear } from "./linear";
 
+export class IssueViewer {
+  private static currentPanel: vscode.WebviewPanel | undefined = undefined;
+  private static readonly viewType = 'linearc.issueViewer';
 
-export async function showIssue(issueIdentifier: string | undefined, context: vscode.ExtensionContext, currentPanel: vscode.WebviewPanel | undefined) {
-  if (issueIdentifier === undefined) {
-    // prompt the user to enter the issue identifier
-    issueIdentifier = await vscode.window.showInputBox({
-      placeHolder: "LIN-12",
-      prompt: "Enter the issue identifier to show"
-    });
+  public static async show(context: vscode.ExtensionContext, issueIdentifier: string | undefined): Promise<vscode.WebviewPanel | undefined> {
+    if (issueIdentifier === undefined) {
+      // prompt the user to enter the issue identifier
+      issueIdentifier = await vscode.window.showInputBox({
+        placeHolder: "LIN-12",
+        prompt: "Enter the issue identifier to show"
+      });
 
-    if (!issueIdentifier) {
-      vscode.window.showErrorMessage("No issue identifier provided.");
-      return;
-    }
-  }
-
-  const columnToShowIn = vscode.window.activeTextEditor
-    ? vscode.window.activeTextEditor.viewColumn
-    : undefined;
-
-  if (currentPanel) {
-    // If we already have a panel, show it in the target column
-    currentPanel.reveal(columnToShowIn);
-
-    if (currentPanel.title !== issueIdentifier) { // if the original panel is showing other issue
-      // update the content
-      currentPanel.title = issueIdentifier;
-      currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
-      currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, currentPanel.webview, context.extensionUri);
+      if (!issueIdentifier) {
+        vscode.window.showErrorMessage("No issue identifier provided.");
+        return;
+      }
     }
 
-  } else {
-    // Otherwise, create a new panel
-    currentPanel = vscode.window.createWebviewPanel(
-      "issue", // Identifies the type of the webview. Used internally
-      issueIdentifier, // Title of the panel displayed to the user
-      columnToShowIn || vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
-      {
-        // And restrict the webview to only loading content from the extension's `media` directory.
-        localResourceRoots: [
-          vscode.Uri.joinPath(
-            vscode.Uri.file(context.extensionPath), "media"
-          )
-        ]
-      } // Webview options.
-    );
-    currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
-    currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, currentPanel.webview, context.extensionUri);
+    const columnToShowIn = vscode.window.activeTextEditor
+      ? vscode.window.activeTextEditor.viewColumn
+      : undefined;
 
-    // Reset when the current panel is closed
-    currentPanel.onDidDispose(
-      () => {
-        currentPanel = undefined;
-      },
-      null,
-      context.subscriptions
-    );
+    if (IssueViewer.currentPanel) {
+      // If we already have a panel, show it in the target column
+      IssueViewer.currentPanel.reveal(columnToShowIn);
+
+      if (IssueViewer.currentPanel.title !== issueIdentifier) { // if the original panel is showing other issue
+        // update the content
+        IssueViewer.currentPanel.title = issueIdentifier;
+        IssueViewer.currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
+        IssueViewer.currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, IssueViewer.currentPanel.webview, context.extensionUri);
+      }
+
+    } else {
+      // Otherwise, create a new panel
+      IssueViewer.currentPanel = vscode.window.createWebviewPanel(
+        IssueViewer.viewType,
+        issueIdentifier,
+        columnToShowIn || vscode.ViewColumn.Two,
+        {
+          enableScripts: true,
+          retainContextWhenHidden: true,
+          localResourceRoots: [
+            vscode.Uri.joinPath(
+              vscode.Uri.file(context.extensionPath), "media"
+            )
+          ]
+        }
+      );
+
+      IssueViewer.currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
+      IssueViewer.currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, IssueViewer.currentPanel.webview, context.extensionUri);
+
+      // Reset when the panel is disposed
+      IssueViewer.currentPanel.onDidDispose(
+        () => {
+            IssueViewer.currentPanel = undefined;
+        },
+        null,
+        context.subscriptions
+      );
+    }
+
+    // Update the currentPanel reference
+    context.workspaceState.update('currentPanel', IssueViewer.currentPanel);
+
+    return IssueViewer.currentPanel;
   }
-
-  // Update the currentPanel reference
-  context.workspaceState.update('currentPanel', currentPanel);
-};
+}
 
 /**
  * return loading screen HTML

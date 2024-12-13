@@ -69,8 +69,12 @@
         {
           "id": "linear-issues",
           "name": "Issues",
-          "icon": "media/dark/issues.svg",
-          "contextualTitle": "Issues Contextual Title"
+          "icon": "media/dark/issues.svg"
+        },
+        {
+          "id": "linear-projects",
+          "name": "Projects",
+          "icon": "media/dark/projects.svg"
         }
       ]
     },

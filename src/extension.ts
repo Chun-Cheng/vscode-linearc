@@ -2,9 +2,10 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
-import { showIssue } from "./issue_viewer";
+// import { showIssue } from "./issue_viewer";
 import { linear } from "./linear";
 import { IssuesProvider } from "./issues_provider";
+import { IssueViewer } from './issue_viewer';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -51,13 +52,18 @@ export function activate(context: vscode.ExtensionContext) {
   // issue viewer
 
   // Track the current panel with a webview
-  let currentPanel: vscode.WebviewPanel | undefined = context.workspaceState.get('currentPanel');
-  context.subscriptions.push(
-    vscode.commands.registerCommand("linearc.show-issue", async (issueIdentifier: string | undefined) => {
-      await showIssue(issueIdentifier, context, currentPanel);
-      currentPanel = context.workspaceState.get('currentPanel');
-    })
-  );
+  // let currentPanel: vscode.WebviewPanel | undefined = context.workspaceState.get('currentPanel');
+  // context.subscriptions.push(
+  //   vscode.commands.registerCommand("linearc.show-issue", async (issueIdentifier: string | undefined) => {
+  //     currentPanel = await showIssue(issueIdentifier, context, currentPanel);
+  //     context.workspaceState.update('currentPanel', currentPanel);
+  //   })
+  // );
+
+  let showIssueCommand = vscode.commands.registerCommand('linearc.show-issue', (issueId) => {
+    IssueViewer.show(context, issueId);
+  });
+  context.subscriptions.push(showIssueCommand);
 
   // other initialization
   // prompt the user to connect to Linear => run right after installation completed
