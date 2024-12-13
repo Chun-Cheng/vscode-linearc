@@ -26,8 +26,8 @@ class Linear {
     // check if the user is not connected to Linear
     if (this.isConnected() === false) {
       // prompt the user to connect to Linear
-      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, 'Connect Linear');
-      if (selection === 'Connect Linear') {
+      const selection = await vscode.window.showErrorMessage(`You need to connect to Linear first.`, "Connect Linear");
+      if (selection === "Connect Linear") {
         this.connect();
       }
       return false;

@@ -1,8 +1,8 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import { Issue, Team, WorkflowState } from '@linear/sdk';
+import * as vscode from "vscode";
+import * as path from "path";
+import { Issue, Team, WorkflowState } from "@linear/sdk";
 
-import { IssuePriority } from './linear';
+import { IssuePriority } from "./linear";
 
 export class IssueItem extends vscode.TreeItem {
   constructor(
@@ -23,64 +23,64 @@ export class IssueItem extends vscode.TreeItem {
 
     // set item icon
     let icon_path: string | { light: string, dark: string };
-    const iconConfig = vscode.workspace.getConfiguration('linearc').get('issue-item-icon');
+    const iconConfig = vscode.workspace.getConfiguration("linearc").get("issue-item-icon");
     if (iconConfig === "status") {
       // select icon according to data
-      let statusIconFileName: string = '';
+      let statusIconFileName: string = "";
       if (state === undefined) {
-        statusIconFileName = '';
+        statusIconFileName = "";
       } else if (state.type === "triage") {
-        statusIconFileName = 'status_triage.svg';
+        statusIconFileName = "status_triage.svg";
       } else if (state.type === "backlog") {
-        statusIconFileName = 'status_backlog.svg';
+        statusIconFileName = "status_backlog.svg";
       } else if (state.type === "unstarted") {
-        statusIconFileName = 'status_todo.svg';
+        statusIconFileName = "status_todo.svg";
       } else if (state.type === "started" && state.name === "In Progress") {
-        statusIconFileName = 'status_in_progress.svg';
+        statusIconFileName = "status_in_progress.svg";
       } else if (state.type === "started" && state.name === "In Review") {
-        statusIconFileName = 'status_in_review.svg';
+        statusIconFileName = "status_in_review.svg";
       } else if (state.type === "completed") {
-        statusIconFileName = 'status_done.svg';
+        statusIconFileName = "status_done.svg";
       } else if (state.type === "canceled") {
-        statusIconFileName = 'status_canceled.svg';
+        statusIconFileName = "status_canceled.svg";
       }
       icon_path = {
-        light: path.join(__dirname, '..', 'media', 'light', statusIconFileName),
-        dark: path.join(__dirname, '..', 'media', 'dark', statusIconFileName)
+        light: path.join(__dirname, "..", "media", "light", statusIconFileName),
+        dark: path.join(__dirname, "..", "media", "dark", statusIconFileName)
       };
 
     } else if (iconConfig === "priority") {
       const priorityIconMap: { [key in IssuePriority]: string } = {
-        [IssuePriority.Urgent]:      'priority_urgent.svg',
-        [IssuePriority.High]:        'priority_high.svg',
-        [IssuePriority.Medium]:      'priority_medium.svg',
-        [IssuePriority.Low]:         'priority_low.svg',
-        [IssuePriority.No_Priority]: 'priority_no.svg',
+        [IssuePriority.Urgent]:      "priority_urgent.svg",
+        [IssuePriority.High]:        "priority_high.svg",
+        [IssuePriority.Medium]:      "priority_medium.svg",
+        [IssuePriority.Low]:         "priority_low.svg",
+        [IssuePriority.No_Priority]: "priority_no.svg",
       };
       icon_path = {
-        light: path.join(__dirname, '..', 'media', 'light', priorityIconMap[priority] || ''),
-        dark: path.join(__dirname, '..', 'media', 'dark', priorityIconMap[priority] || '')
+        light: path.join(__dirname, "..", "media", "light", priorityIconMap[priority] || ""),
+        dark: path.join(__dirname, "..", "media", "dark", priorityIconMap[priority] || "")
       };
 
     } else if (iconConfig === "assignee") {
-      icon_path = '';  // TODO: implement assignee icon
+      icon_path = "";  // TODO: implement assignee icon
     } else {  // none
-      icon_path = '';
+      icon_path = "";
     }
 
     // super(label, collapsibleState);
     super(issue.identifier, undefined);
-    // this.contextValue = 'issue';
+    // this.contextValue = "issue";
     
     this.iconPath = icon_path;
     this.id = `${teamId}.${categoryId}.${issue.id}`;
     this.description = issue.title;  // set the issue title as the TreeView item description
     this.tooltip = `${issue.identifier}: ${issue.title}`;
     this.command = {
-      command: 'linearc.show-issue',
-      title: 'Show Issue',
+      command: "linearc.show-issue",
+      title: "Show Issue",
       arguments: [issue.identifier]
-    } // open issue content when the issue item is selected
+    }; // open issue content when the issue item is selected
 
   }
 }
@@ -95,8 +95,8 @@ export class TeamItem extends vscode.TreeItem {
     this.id = team.id;
     this.tooltip = `${team.name}`;
     this.iconPath = {
-      light: path.join(__dirname, '..', 'media', 'light', 'teams.svg'),
-      dark: path.join(__dirname, '..', 'media', 'light', 'teams.svg')
+      light: path.join(__dirname, "..", "media", "light", "teams.svg"),
+      dark: path.join(__dirname, "..", "media", "light", "teams.svg")
     };
   }
 }
@@ -108,22 +108,22 @@ export class CategoryItem extends vscode.TreeItem {
     public issues: IssueItem[],
     public collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed
   ) {
-    const categoryId = name.toLowerCase().replace(' ', '-');
+    const categoryId = name.toLowerCase().replace(" ", "-");
 
     super(name, collapsibleState);
     this.id = `${teamId}.${categoryId}`;
     this.tooltip = `${name}`;
     // this.iconPath = {
-    //   light: path.join(__dirname, '..', 'media', 'light', 'category.svg'),
-    //   dark: path.join(__dirname, '..', 'media', 'light', 'category.svg')
+    //   light: path.join(__dirname, "..", "media", "light", "category.svg"),
+    //   dark: path.join(__dirname, "..", "media", "light", "category.svg")
     // };
 
     // TODO: remove this
     this.command = {
-      command: 'linearc.show-category',
-      title: 'Show Category',
+      command: "linearc.show-category",
+      title: "Show Category",
       arguments: [this.id]
-    }
+    };
     // TODO: if the issues is empty, create a item shows "No issues"
     // if (issues.length === 0) {
     //   // ......

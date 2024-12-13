@@ -1,8 +1,8 @@
-import * as vscode from 'vscode';
-import { Issue, Team, WorkflowState } from '@linear/sdk';
+import * as vscode from "vscode";
+import { Issue, Team, WorkflowState } from "@linear/sdk";
 
-import { TeamItem, CategoryItem, IssueItem, MessageItem } from './issues_items';
-import { IssuePriority, linear } from './linear';
+import { TeamItem, CategoryItem, IssueItem, MessageItem } from "./issues_items";
+import { IssuePriority, linear } from "./linear";
 
 // Issues view
 //   team 1
@@ -66,10 +66,10 @@ export class IssuesProvider implements vscode.TreeDataProvider<vscode.TreeItem> 
   }
 
   // getParent?(element: Issue): vscode.ProviderResult<Issue> {
-  //   throw new Error('Method not implemented.');
+  //   throw new Error("Method not implemented.");
   // }
   // resolveTreeItem?(item: vscode.TreeItem, element: Issue, token: vscode.CancellationToken): vscode.ProviderResult<vscode.TreeItem> {
-  //   throw new Error('Method not implemented.');
+  //   throw new Error("Method not implemented.");
   // }
 
   public async refresh() {
@@ -106,7 +106,7 @@ export class IssuesProvider implements vscode.TreeDataProvider<vscode.TreeItem> 
     this.isLoading = true;
     this.updateView();
 
-    const tokens = teamCategoryId.split('.');
+    const tokens = teamCategoryId.split(".");
     if (tokens.length !== 2) {
       this.isLoading = false;
       this.updateView();
@@ -141,23 +141,23 @@ export class IssuesProvider implements vscode.TreeDataProvider<vscode.TreeItem> 
 
       // TODO: implement this
       switch (categoryId) {
-        case 'my-issues':
+        case "my-issues":
           const myTeamIssues = await linear.getMyTeamIssuesById(teamId) || [];
           category.issues = await Promise.all(myTeamIssues.map(async issue => 
             new IssueItem(issue, await issue.state, teamId, categoryId))
-          )
+          );
           break;
-        case 'active-issues':
+        case "active-issues":
           const teamActiveIssues = await linear.getTeamActiveIssuesById(teamId) || [];
           category.issues = await Promise.all(teamActiveIssues.map(async issue => 
             new IssueItem(issue, await issue.state, teamId, categoryId))
-          )
+          );
           break;
-        case 'all-issues':
+        case "all-issues":
           const teamIssues = await linear.getTeamIssuesById(teamId) || [];
           category.issues = await Promise.all(teamIssues.map(async issue => 
             new IssueItem(issue, await issue.state, teamId, categoryId))
-          )
+          );
           break;
       }
     }
