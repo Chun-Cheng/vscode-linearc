@@ -104,7 +104,15 @@ export function activate(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(openIssueInLinear);
 
-
+  // connect to another Linear organization
+  const reconnectFunction = async () => {
+    await vscode.commands.executeCommand("linear-connect.logout");
+    linear.connect();
+  };
+  const hideReconnect = vscode.commands.registerCommand("linearc.hide-reconnect", reconnectFunction);
+  context.subscriptions.push(hideReconnect);
+  const reconnect = vscode.commands.registerCommand("linearc.reconnect", reconnectFunction);
+  context.subscriptions.push(reconnect);
 
   const debug = vscode.commands.registerCommand("linearc.debug", async () => {
     const debug_data = await linear.getPriorityValues();
@@ -122,23 +130,12 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   // issue viewer
-
-  // Track the current panel with a webview
-  // let currentPanel: vscode.WebviewPanel | undefined = context.workspaceState.get('currentPanel');
-  // context.subscriptions.push(
-  //   vscode.commands.registerCommand("linearc.show-issue", async (issueIdentifier: string | undefined) => {
-  //     currentPanel = await showIssue(issueIdentifier, context, currentPanel);
-  //     context.workspaceState.update('currentPanel', currentPanel);
-  //   })
-  // );
-
   let showIssueCommand = vscode.commands.registerCommand('linearc.show-issue', (issueId) => {
     IssueViewer.show(context, issueId);
   });
   context.subscriptions.push(showIssueCommand);
 
   // other initialization
-  // prompt the user to connect to Linear => run right after installation completed
   linear.connect();
 }
 

@@ -46,6 +46,14 @@
         "title": "LineArc: Connect to Linear"
       },
       {
+        "command": "linearc.reconnect",
+        "title": "LineArc: Connect to Another Linear Organization"
+      },
+      {
+        "command": "linearc.hide-reconnect",
+        "title": "Connect to Another Linear Organization"
+      },
+      {
         "command": "linearc.refresh-issues",
         "title": "LineArc: Refresh Issues",
         "icon": "$(refresh)"
@@ -106,6 +114,10 @@
         },
         {
           "command": "linearc.hide-open-organization-in-linear",
+          "when": "view == linear-issues"
+        },
+        {
+          "command": "linearc.hide-reconnect",
           "when": "view == linear-issues"
         }
       ],

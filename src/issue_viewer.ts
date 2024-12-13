@@ -554,9 +554,13 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
         ${
           issue["description"]
             ? marked.parse(issue.description)
-            : "" // no description
+            : '<i style="color: var(--vscode-editorLineNumber-foreground)">No description</i>' // no description
         }
       </div>
+      <hr style="
+        border-color: var(--vscode-widget-border);
+        border-width: 1px 0 0;
+      ">
     </body>
     </html>`;
 };
