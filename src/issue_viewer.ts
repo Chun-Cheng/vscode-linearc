@@ -251,9 +251,23 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
         : {
           light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, "light", "assignee_yes.svg")),
           dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, "dark", "assignee_yes.svg"))
-        };; // default icon // TODO: change to user name icon?
+        }; // default icon // TODO: change to user name icon?
     }
   }
+
+  // project
+  const project = await issue.project;
+  const projectIconSrc = {
+    light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, "light", "project.svg")),
+    dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, "dark", "project.svg"))
+  };
+
+  // milestone
+  const milestone = await issue.projectMilestone;
+  const milestoneIconSrc = {
+    light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, "light", "milestone.svg")),
+    dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, "dark", "milestone.svg"))
+  };
 
   // estimate
   const estimate = issue.estimate;
@@ -443,8 +457,101 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
         </div>
 
         <!-- project -->
+        <div data-menu-open="false" style="
+          min-width: 14px;
+          display: inline-flex;
+          flex: initial;
+          flex-direction: row;
+        ">
+          <div role="combobox" type="button" style="
+            min-width: 14px;
+            max-width: 100%;
+            align-items: center;
+            position: relative;
+            display: inline-flex;
+            vertical-align: top;
+            border-radius: 5px;
+            border: 1px solid var(--vscode-chat-requestBorder);
+            background-color: var(--vscode-chat-requestBackground);
+            padding: 2px 8px;
+          ">
+            <span aria-hidden="true" style="
+              margin-right: 4px;
+              display: inline-flex;
+              flex-grow: 0;
+              flex-shrink: 0;
+              align-items: center;
+              justify-content: center;
+            ">
+              <!-- TODO: apply project.color to the icon -->
+              <img data-theme="light" style="
+                display: inherit;
+                width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+              " src="${projectIconSrc.light}">
+              <img data-theme="dark" style="
+                display: none;
+                width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+              " src="${projectIconSrc.dark}">
+            </span>
+            <span style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              line-height: normal;
+            ">${project ? project.name : "-"}${milestone ? `<span style="color: var(--vscode-editorLineNumber-foreground)"> | </span>${milestone.name}` : ""}</span>
+          </div>
+        </div>
 
         <!-- milestone -->
+        <!--
+        <div data-menu-open="false" style="
+          min-width: 14px;
+          display: inline-flex;
+          flex: initial;
+          flex-direction: row;
+        ">
+          <div role="combobox" type="button" style="
+            min-width: 14px;
+            max-width: 100%;
+            align-items: center;
+            position: relative;
+            display: inline-flex;
+            vertical-align: top;
+            border-radius: 5px;
+            border: 1px solid var(--vscode-chat-requestBorder);
+            background-color: var(--vscode-chat-requestBackground);
+            padding: 2px 8px;
+          ">
+            <span aria-hidden="true" style="
+              margin-right: 4px;
+              display: inline-flex;
+              flex-grow: 0;
+              flex-shrink: 0;
+              align-items: center;
+              justify-content: center;
+            ">
+              <img data-theme="light" style="
+                display: inherit;
+                width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+              " src="${""/* projectIconSrc.light TODO: milestone icon*/}">
+              <img data-theme="dark" style="
+                display: none;
+                width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+              " src="${""/* projectIconSrc.dark */}">
+            </span>
+            <span style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              line-height: normal;
+            ">${milestone ? milestone.name : "-"}</span>
+          </div>
+        </div>
+        -->
 
         <!-- estimate -->
         <div data-menu-open="false" style="
