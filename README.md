@@ -1,6 +1,6 @@
-# Lineboard
+# LineArc
 
-This is the README for your extension "Lineboard". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "LineArc". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 
