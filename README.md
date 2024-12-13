@@ -1,7 +1,5 @@
 <p align="center">
-  <a href="https://linear.app" target="_blank" rel="noopener noreferrer">
-    <img src="media/linearc-icon.png" alt="LineArc icon" width="128" style="border-radius: 50%;"/>
-  </a> 
+  <img src="media/docs/rounded-linearc-icon.png" alt="LineArc icon">
 </p>
 
 <h1 align="center">LineArc</h1>
