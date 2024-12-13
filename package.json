@@ -59,7 +59,19 @@
         "title": "Open in Linear"
       },
       {
+        "command": "linearc.open-team-in-linear",
+        "title": "LineArc: Open Team in Linear"
+      },
+      {
         "command": "linearc.hide-open-team-in-linear",
+        "title": "Open in Linear"
+      },
+      {
+        "command": "linearc.open-issue-in-linear",
+        "title": "LineArc: Open Issue in Linear"
+      },
+      {
+        "command": "linearc.hide-open-issue-in-linear",
         "title": "Open in Linear"
       },
       {
@@ -101,6 +113,10 @@
         {
           "command": "linearc.hide-open-team-in-linear",
           "when": "view == linear-issues && viewItem == team"
+        },
+        {
+          "command": "linearc.hide-open-issue-in-linear",
+          "when": "view == linear-issues && viewItem == issue"
         }
       ],
       "commandPalette": [

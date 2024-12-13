@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 import { linear } from "./linear";
 import { IssuesProvider } from "./issues_provider";
 import { IssueViewer } from './issue_viewer';
-import { TeamItem } from "./issues_items";
+import { TeamItem, IssueItem } from "./issues_items";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -49,18 +49,63 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(openOrganizationInLinear);
 
   // open team in Linear
-  const openTeamInLinearFunction = async (teamItem: TeamItem) => {
+  const hideOpenTeamInLinear = vscode.commands.registerCommand("linearc.hide-open-team-in-linear", async (teamItem: TeamItem) => {
     const team = teamItem.team;
     const organization = await linear.getOrganization();
     if (organization === null) {
       return vscode.window.showErrorMessage("Failed to get organization data.");
     }
     vscode.env.openExternal(vscode.Uri.parse(`https://linear.app/${organization.urlKey}/team/${team.key}`));
-  };
-  const hideOpenTeamInLinear = vscode.commands.registerCommand("linearc.hide-open-team-in-linear", openTeamInLinearFunction);
+  });
   context.subscriptions.push(hideOpenTeamInLinear);
 
-  
+  const openTeamInLinear = vscode.commands.registerCommand("linearc.open-team-in-linear", async () => {
+    const teamKey = await vscode.window.showInputBox({
+      prompt: "Enter the team key (e.g. \"LIN\" in \"LIN-12\")",
+      placeHolder: "LIN",
+    });
+    if (teamKey === undefined) {
+      return vscode.window.showErrorMessage("Team key is required.");
+    }
+    // TODO: check if the team key is valid ?
+    const organization = await linear.getOrganization();
+    if (organization === null) {
+      return vscode.window.showErrorMessage("Failed to get organization data.");
+    }
+    vscode.env.openExternal(vscode.Uri.parse(`https://linear.app/${organization.urlKey}/team/${teamKey}`));
+  });
+  context.subscriptions.push(openTeamInLinear);
+
+  // open issue in Linear
+  const hideOpenIssueInLinear = vscode.commands.registerCommand("linearc.hide-open-issue-in-linear", async (issueItem: IssueItem) => {
+    const issue = issueItem.issue;
+    const organization = await linear.getOrganization();
+    if (organization === null) {
+      return vscode.window.showErrorMessage("Failed to get organization data.");
+    }
+    vscode.env.openExternal(vscode.Uri.parse(`https://linear.app/${organization.urlKey}/issue/${issue.identifier}`));
+  });
+  context.subscriptions.push(hideOpenIssueInLinear);
+
+  const openIssueInLinear = vscode.commands.registerCommand("linearc.open-issue-in-linear", async () => {
+    const issueIdentifier = await vscode.window.showInputBox({
+      prompt: "Enter the issue identifier",
+      placeHolder: "LIN-12",
+    });
+    if (issueIdentifier === undefined) {
+      return vscode.window.showErrorMessage("Issue identifier is required.");
+    }
+    // TODO: check if the issue identifier is valid ?
+    const organization = await linear.getOrganization();
+    if (organization === null) {
+      return vscode.window.showErrorMessage("Failed to get organization data.");
+    }
+    vscode.env.openExternal(vscode.Uri.parse(`https://linear.app/${organization.urlKey}/issue/${issueIdentifier}`));
+  });
+  context.subscriptions.push(openIssueInLinear);
+
+
+
   const debug = vscode.commands.registerCommand("linearc.debug", async () => {
     const debug_data = await linear.getPriorityValues();
     vscode.window.showInformationMessage(`${JSON.stringify(debug_data, null, 4)}`);

@@ -89,7 +89,7 @@ export class IssueItem extends vscode.TreeItem {
       title: "Show Issue",
       arguments: [issue.identifier]
     }; // open issue content when the issue item is selected
-
+    this.contextValue = "issue";
   }
 }
 
