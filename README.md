@@ -1,8 +1,18 @@
-# LineArc
+<p align="center">
+  <a href="https://linear.app" target="_blank" rel="noopener noreferrer">
+    <img src="media/linearc-icon.png" alt="LineArc icon" width="128" style="border-radius: 50%;"/>
+  </a> 
+</p>
 
-This is the README for your extension "LineArc". After writing up a brief description, we recommend including the following sections.
+<h1 align="center">LineArc</h1>
+
+<p align="center">
+  An <b>unofficial</b> extension to easier your Linear workflow in VS Code.
+</p>
 
 ## Features
+
+// TODO: add features description
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
 
@@ -14,18 +24,15 @@ For example if there is an image subfolder under your extension project workspac
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+LineArc using the official [Linear Connect](https://marketplace.visualstudio.com/items?itemName=Linear.linear-connect) VS Code extension to authenticate with your Linear account.
+
+While installing LineArc, Linear Connect is automatically installed, so you don't need to install it manually.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `LineArc.issue-item-icon`: Choose which kind of icon to show in the issue list.
 
 ## Known Issues
 
