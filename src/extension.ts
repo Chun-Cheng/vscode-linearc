@@ -6,6 +6,7 @@ import * as vscode from "vscode";
 import { linear } from "./linear";
 import { IssuesProvider } from "./issues_provider";
 import { IssueViewer } from './issue_viewer';
+import { TeamItem } from "./issues_items";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -47,6 +48,19 @@ export function activate(context: vscode.ExtensionContext) {
   const openOrganizationInLinear = vscode.commands.registerCommand("linearc.open-organization-in-linear", openOrganizationInLinearFunction);
   context.subscriptions.push(openOrganizationInLinear);
 
+  // open team in Linear
+  const openTeamInLinearFunction = async (teamItem: TeamItem) => {
+    const team = teamItem.team;
+    const organization = await linear.getOrganization();
+    if (organization === null) {
+      return vscode.window.showErrorMessage("Failed to get organization data.");
+    }
+    vscode.env.openExternal(vscode.Uri.parse(`https://linear.app/${organization.urlKey}/team/${team.key}`));
+  };
+  const hideOpenTeamInLinear = vscode.commands.registerCommand("linearc.hide-open-team-in-linear", openTeamInLinearFunction);
+  context.subscriptions.push(hideOpenTeamInLinear);
+
+  
   const debug = vscode.commands.registerCommand("linearc.debug", async () => {
     const debug_data = await linear.getPriorityValues();
     vscode.window.showInformationMessage(`${JSON.stringify(debug_data, null, 4)}`);

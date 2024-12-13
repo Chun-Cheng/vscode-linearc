@@ -106,6 +106,7 @@ export class TeamItem extends vscode.TreeItem {
     //   light: path.join(__dirname, "..", "media", "light", "teams.svg"),
     //   dark: path.join(__dirname, "..", "media", "light", "teams.svg")
     // };
+    this.contextValue = "team";
   }
 }
 

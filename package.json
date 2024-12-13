@@ -59,6 +59,10 @@
         "title": "Open in Linear"
       },
       {
+        "command": "linearc.hide-open-team-in-linear",
+        "title": "Open in Linear"
+      },
+      {
         "command": "linearc.show-issue",
         "title": "LineArc: Show Issue"
       }
@@ -91,6 +95,12 @@
         {
           "command": "linearc.hide-open-organization-in-linear",
           "when": "view == linear-issues"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "linearc.hide-open-team-in-linear",
+          "when": "view == linear-issues && viewItem == team"
         }
       ],
       "commandPalette": [
