@@ -138,23 +138,28 @@ class Linear {
 
     // get data
     try {
-      // TODO: try to improve performance by using native SDK functions
-      const issues = await this.linearClient!.issues();
-      const issuesInTeam: Issue[] = [];
+      const issues = await this.linearClient!.issues({ 
+        filter: {
+          team: { id: { eq: teamId }}
+        }  // TODO: sort
+      });
+      return issues.nodes;
 
-      for (const issue of issues.nodes) {
-        // get
-        const team = await issue.team;
-        if (!team) {
-          continue;
-        }
-        const issueTeamId = team.id;
-        // check
-        if (issueTeamId === teamId) {
-          issuesInTeam.push(issue);
-        }
-      }
-      return issuesInTeam;
+      // const issuesInTeam: Issue[] = [];
+
+      // for (const issue of issues.nodes) {
+      //   // get
+      //   const team = await issue.team;
+      //   if (!team) {
+      //     continue;
+      //   }
+      //   const issueTeamId = team.id;
+      //   // check
+      //   if (issueTeamId === teamId) {
+      //     issuesInTeam.push(issue);
+      //   }
+      // }
+      // return issuesInTeam;
 
     } catch (error) {
       vscode.window.showErrorMessage("Failed to get data from Linear. (linear.getTeamIssuesById)");
@@ -203,24 +208,32 @@ class Linear {
 
     // get data
     try {
-      // TODO: try to achieve this by using native SDK functions
-      const myIssuesConnection = await this.me!.assignedIssues();
-      const myIssues = myIssuesConnection.nodes;
-      const myTeamissues: Issue[] = [];
+      const issues = await this.linearClient!.issues({ 
+        filter: {
+          team: { id: { eq: teamId }},
+          assignee: { isMe: { eq: true }}
+        }  // TODO: sort
+      });
+      return issues.nodes;
 
-      for (const issue of myIssues) {
-        // get
-        const team = await issue.team;
-        if (!team) {
-          continue;
-        }
-        const issueTeamId = team.id;
-        // check
-        if (issueTeamId === teamId) {
-          myTeamissues.push(issue);
-        }
-      }
-      return myTeamissues;
+      // // TODO: try to achieve this by using native SDK functions
+      // const myIssuesConnection = await this.me!.assignedIssues();
+      // const myIssues = myIssuesConnection.nodes;
+      // const myTeamissues: Issue[] = [];
+
+      // for (const issue of myIssues) {
+      //   // get
+      //   const team = await issue.team;
+      //   if (!team) {
+      //     continue;
+      //   }
+      //   const issueTeamId = team.id;
+      //   // check
+      //   if (issueTeamId === teamId) {
+      //     myTeamissues.push(issue);
+      //   }
+      // }
+      // return myTeamissues;
 
     } catch (error) {
       vscode.window.showErrorMessage("Failed to get data from Linear. (linear.getMyTeamIssuesById)");
@@ -276,29 +289,37 @@ class Linear {
 
     // get data
     try {
-      // TODO: try to achieve this by using native SDK functions
-      const issuesConnection = await this.linearClient!.issues();
-      const issues = issuesConnection.nodes;
-      const teamActiveIssues: Issue[] = [];
+      const issues = await this.linearClient!.issues({ 
+        filter: {
+          team: { id: { eq: teamId }},
+          state: { type: { in: ["unstarted", "started"] } }
+        }  // TODO: sort
+      });
+      return issues.nodes;
 
-      for (const issue of issues) {
-        // get team
-        const team = await issue.team;
-        if (!team) {
-          continue;
-        }
-        const issueTeamId = team.id;
-        // get workflow state
-        const issueState = await issue.state;
-        if (!issueState) {
-          continue;
-        }
-        // check
-        if (issueTeamId === teamId && (issueState.type === "unstarted" || issueState.type === "started")) {
-          teamActiveIssues.push(issue);
-        }
-      }
-      return teamActiveIssues;
+      // // TODO: try to achieve this by using native SDK functions
+      // const issuesConnection = await this.linearClient!.issues();
+      // const issues = issuesConnection.nodes;
+      // const teamActiveIssues: Issue[] = [];
+
+      // for (const issue of issues) {
+      //   // get team
+      //   const team = await issue.team;
+      //   if (!team) {
+      //     continue;
+      //   }
+      //   const issueTeamId = team.id;
+      //   // get workflow state
+      //   const issueState = await issue.state;
+      //   if (!issueState) {
+      //     continue;
+      //   }
+      //   // check
+      //   if (issueTeamId === teamId && (issueState.type === "unstarted" || issueState.type === "started")) {
+      //     teamActiveIssues.push(issue);
+      //   }
+      // }
+      // return teamActiveIssues;
 
     } catch (error) {
       vscode.window.showErrorMessage("Failed to get data from Linear. (linear.getTeamActiveIssuesById)");
