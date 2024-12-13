@@ -51,6 +51,14 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "linearc.open-organization-in-linear",
+        "title": "LineArc: Open Organization in Linear"
+      },
+      {
+        "command": "linearc.hide-open-organization-in-linear",
+        "title": "Open in Linear"
+      },
+      {
         "command": "linearc.show-issue",
         "title": "LineArc: Show Issue"
       }
@@ -79,6 +87,16 @@
           "command": "linearc.refresh-issues",
           "when": "view == linear-issues",
           "group": "navigation"
+        },
+        {
+          "command": "linearc.hide-open-organization-in-linear",
+          "when": "view == linear-issues"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "linearc.hide-open-organization-in-linear",
+          "when": "false"
         }
       ]
     },

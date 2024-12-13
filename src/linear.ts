@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { LinearClient, Issue, Team, User, WorkflowState } from "@linear/sdk";
+import { LinearClient, Issue, Team, User, WorkflowState, Organization } from "@linear/sdk";
 
 export enum IssuePriority {
   No_Priority,
@@ -66,6 +66,22 @@ class Linear {
 
     // emit event to notify the issue provider to refresh the data
     vscode.commands.executeCommand("linearc.refresh-issues");
+  }
+
+  async getOrganization() : Promise<Organization | null> {
+    // check if the user is connected to Linear
+    if (await this.connectCheckPrompt() === false) {
+      return null;
+    }
+
+    // get data
+    try {
+      const organization = await this.linearClient!.organization;
+      return organization;
+    } catch (error) {
+      vscode.window.showErrorMessage("Failed to get data from Linear. (linear.getOrganization)");
+    }
+    return null;
   }
 
   async getMyIssues() : Promise<Issue[] | null> {

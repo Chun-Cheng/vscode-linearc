@@ -34,6 +34,19 @@ export function activate(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(refreshIssues);
 
+  // open organization in Linear
+  const openOrganizationInLinearFunction = async () => {
+    const organization = await linear.getOrganization();
+    if (organization === null) {
+      return vscode.window.showErrorMessage("Failed to get organization data.");
+    }
+    vscode.env.openExternal(vscode.Uri.parse(`https://linear.app/${organization.urlKey}`));
+  };
+  const hideOpenOrganizationInLinear = vscode.commands.registerCommand("linearc.hide-open-organization-in-linear", openOrganizationInLinearFunction);
+  context.subscriptions.push(hideOpenOrganizationInLinear);
+  const openOrganizationInLinear = vscode.commands.registerCommand("linearc.open-organization-in-linear", openOrganizationInLinearFunction);
+  context.subscriptions.push(openOrganizationInLinear);
+
   const debug = vscode.commands.registerCommand("linearc.debug", async () => {
     const debug_data = await linear.getPriorityValues();
     vscode.window.showInformationMessage(`${JSON.stringify(debug_data, null, 4)}`);
