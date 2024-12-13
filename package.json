@@ -11,7 +11,7 @@
   "categories": [
     "Other"
   ],
-  "icon": "media/linearc-icon.png",
+  "icon": "media/linearc-icon-bg.png",
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
@@ -60,7 +60,7 @@
         {
           "id": "linearc",
           "title": "LineArc",
-          "icon": "media/linear-logo.svg"
+          "icon": "media/linearc-logo.svg"
         }
       ]
     },
@@ -69,7 +69,7 @@
         {
           "id": "linear-issues",
           "name": "Issues",
-          "icon": "media/issues.svg",
+          "icon": "media/dark/issues.svg",
           "contextualTitle": "Issues Contextual Title"
         }
       ]

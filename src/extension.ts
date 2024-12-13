@@ -51,10 +51,11 @@ export function activate(context: vscode.ExtensionContext) {
   // issue viewer
 
   // Track the current panel with a webview
-  let currentPanel: vscode.WebviewPanel | undefined = undefined;
+  let currentPanel: vscode.WebviewPanel | undefined = context.workspaceState.get('currentPanel');
   context.subscriptions.push(
     vscode.commands.registerCommand("linearc.show-issue", async (issueIdentifier: string | undefined) => {
       await showIssue(issueIdentifier, context, currentPanel);
+      currentPanel = context.workspaceState.get('currentPanel');
     })
   );
 

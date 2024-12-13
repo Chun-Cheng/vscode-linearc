@@ -61,6 +61,9 @@ export async function showIssue(issueIdentifier: string | undefined, context: vs
       context.subscriptions
     );
   }
+
+  // Update the currentPanel reference
+  context.workspaceState.update('currentPanel', currentPanel);
 };
 
 /**
