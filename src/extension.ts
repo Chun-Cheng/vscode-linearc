@@ -39,12 +39,6 @@ export function activate(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(debug);
 
-  // TODO: remove this command from here and package.json
-  const showCategory = vscode.commands.registerCommand("linearc.show-category", async (category: string) => {
-    issuesProvider.showTeamCategory(category);
-  });
-  context.subscriptions.push(showCategory);
-
   // when user settings is changed
   vscode.workspace.onDidChangeConfiguration(event => {
     // issue-item-icon setting changed => refresh the issues view

@@ -51,14 +51,42 @@ export class IssuesProvider implements vscode.TreeDataProvider<vscode.TreeItem> 
       }
       return catogoryItems;
     } else if (element instanceof CategoryItem) {
-      // TODO: call for fetching data
-      const issues = element.issues;
-      if (issues.length === 0) {
+      if (element.issues.length >= 1 && !(element.issues[0] instanceof MessageItem)) {
+        return element.issues;
+      }
+
+      // issues is empty => fetching data
+      const teamId = element.teamId;
+      const categoryId = element.name.toLowerCase().replace(" ", "-");
+      const iconConfig = vscode.workspace.getConfiguration("linearc").get("issue-item-icon");
+      let issues: Issue[] = [];
+
+      switch (categoryId) {
+        case "my-issues":
+          issues = await linear.getMyTeamIssuesById(teamId) || [];
+          break;
+        case "active-issues":
+          issues = await linear.getTeamActiveIssuesById(teamId) || [];
+          break;
+        case "all-issues":
+          issues = await linear.getTeamIssuesById(teamId) || [];
+          break;
+      }
+
+      element.issues = await Promise.all(issues.map(async issue => {
+        let assignee = undefined;
+        if (iconConfig === "assignee") {
+          assignee = await issue.assignee;
+        }
+        return new IssueItem(issue, await issue.state, assignee, teamId, categoryId);
+      }));
+
+      if (element.issues.length === 0) {
         return [new MessageItem("no-data")];
       }
-      return issues;
+      return element.issues;
     }
-    return [];
+    return [new MessageItem("error")];
   }
 
   private updateView() {
@@ -97,70 +125,6 @@ export class IssuesProvider implements vscode.TreeDataProvider<vscode.TreeItem> 
 
       return new TeamItem(team, categories);
     }));
-
-    this.isLoading = false;
-    this.updateView();
-  }
-  
-  public async showTeamCategory(teamCategoryId: string) {
-    this.isLoading = true;
-    this.updateView();
-
-    const tokens = teamCategoryId.split(".");
-    if (tokens.length !== 2) {
-      this.isLoading = false;
-      this.updateView();
-      return;
-    }
-    const teamId = tokens[0];
-    const categoryId = tokens[1];
-
-    // get team
-    const team = this.data.find(item => item instanceof TeamItem && item.team.id === teamId) as TeamItem;
-    if (!team) {
-      vscode.window.showErrorMessage(`Team "${teamId}" not found. (showTeamCategory)`);
-      this.isLoading = false;
-      this.updateView();
-      return;
-    }
-
-    // get category
-    const category = team.categories.find(category => category.id === teamCategoryId);
-    if (category === undefined) {
-      vscode.window.showErrorMessage(`Category "${categoryId}" not found. (showTeamCategory)`);
-      this.isLoading = false;
-      this.updateView();
-      return;
-    }
-
-    // expand the category
-    category.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
-
-    if (category.issues.length === 0) {
-      // get issues of the category
-
-      // TODO: implement this
-      switch (categoryId) {
-        case "my-issues":
-          const myTeamIssues = await linear.getMyTeamIssuesById(teamId) || [];
-          category.issues = await Promise.all(myTeamIssues.map(async issue => 
-            new IssueItem(issue, await issue.state, teamId, categoryId))
-          );
-          break;
-        case "active-issues":
-          const teamActiveIssues = await linear.getTeamActiveIssuesById(teamId) || [];
-          category.issues = await Promise.all(teamActiveIssues.map(async issue => 
-            new IssueItem(issue, await issue.state, teamId, categoryId))
-          );
-          break;
-        case "all-issues":
-          const teamIssues = await linear.getTeamIssuesById(teamId) || [];
-          category.issues = await Promise.all(teamIssues.map(async issue => 
-            new IssueItem(issue, await issue.state, teamId, categoryId))
-          );
-          break;
-      }
-    }
 
     this.isLoading = false;
     this.updateView();

@@ -53,10 +53,6 @@
       {
         "command": "linearc.show-issue",
         "title": "LineArc: Show Issue"
-      },
-      {
-        "command": "linearc.show-category",
-        "title": "LineArc: Show Category"
       }
     ],
     "viewsContainers": {
@@ -84,12 +80,6 @@
           "command": "linearc.refresh-issues",
           "when": "view == linear-issues",
           "group": "navigation"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "linearc.show-category",
-          "when": "false"
         }
       ]
     },

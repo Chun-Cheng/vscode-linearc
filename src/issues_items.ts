@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { Issue, Team, WorkflowState } from "@linear/sdk";
+import { Issue, Team, WorkflowState, User } from "@linear/sdk";
 
 import { IssuePriority } from "./linear";
 
@@ -8,12 +8,12 @@ export class IssueItem extends vscode.TreeItem {
   constructor(
     public readonly issue: Issue,
     public readonly state: WorkflowState | undefined,
+    public readonly assignee: User | undefined,
     public readonly teamId: string,
     public readonly categoryId: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None
   ) {
-    const issueIdentifier = issue.identifier;
-    const title = issue.title;
+    super(issue.identifier, undefined);
 
     const priority = issue.priority === 1 ? IssuePriority.Urgent :
       issue.priority === 2 ? IssuePriority.High :
@@ -22,7 +22,6 @@ export class IssueItem extends vscode.TreeItem {
       IssuePriority.No_Priority;
 
     // set item icon
-    let icon_path: string | { light: string, dark: string };
     const iconConfig = vscode.workspace.getConfiguration("linearc").get("issue-item-icon");
     if (iconConfig === "status") {
       // select icon according to data
@@ -44,7 +43,7 @@ export class IssueItem extends vscode.TreeItem {
       } else if (state.type === "canceled") {
         statusIconFileName = "status_canceled.svg";
       }
-      icon_path = {
+      this.iconPath = {
         light: path.join(__dirname, "..", "media", "light", statusIconFileName),
         dark: path.join(__dirname, "..", "media", "dark", statusIconFileName)
       };
@@ -57,22 +56,31 @@ export class IssueItem extends vscode.TreeItem {
         [IssuePriority.Low]:         "priority_low.svg",
         [IssuePriority.No_Priority]: "priority_no.svg",
       };
-      icon_path = {
+      this.iconPath = {
         light: path.join(__dirname, "..", "media", "light", priorityIconMap[priority] || ""),
         dark: path.join(__dirname, "..", "media", "dark", priorityIconMap[priority] || "")
       };
 
     } else if (iconConfig === "assignee") {
-      icon_path = "";  // TODO: implement assignee icon
+      // icon_path = "";  // TODO: implement assignee icon
+      if (assignee === undefined) {
+        this.iconPath = {
+          light: path.join(__dirname, "..", "media", "light", "assignee_no.svg"),
+          dark: path.join(__dirname, "..", "media", "dark", "assignee_no.svg")
+        };
+      } else {
+        // get assignee icon
+        this.iconPath = assignee.avatarUrl
+          ? vscode.Uri.parse(assignee.avatarUrl)
+          : {
+            light: path.join(__dirname, "..", "media", "light", "assignee_yes.svg"),
+            dark: path.join(__dirname, "..", "media", "dark", "assignee_yes.svg")
+          };
+      }
     } else {  // none
-      icon_path = "";
+      this.iconPath = "";
     }
 
-    // super(label, collapsibleState);
-    super(issue.identifier, undefined);
-    // this.contextValue = "issue";
-    
-    this.iconPath = icon_path;
     this.id = `${teamId}.${categoryId}.${issue.id}`;
     this.description = issue.title;  // set the issue title as the TreeView item description
     this.tooltip = `${issue.identifier}: ${issue.title}`;
@@ -89,7 +97,7 @@ export class TeamItem extends vscode.TreeItem {
   constructor(
     public readonly team: Team,
     public readonly categories: CategoryItem[],
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.Collapsed
+    public readonly collapsibleState: vscode.TreeItemCollapsibleState =   vscode.TreeItemCollapsibleState.Collapsed
   ) {
     super(team.name, collapsibleState);
     this.id = team.id;
@@ -117,17 +125,6 @@ export class CategoryItem extends vscode.TreeItem {
     //   light: path.join(__dirname, "..", "media", "light", "category.svg"),
     //   dark: path.join(__dirname, "..", "media", "light", "category.svg")
     // };
-
-    // TODO: remove this
-    this.command = {
-      command: "linearc.show-category",
-      title: "Show Category",
-      arguments: [this.id]
-    };
-    // TODO: if the issues is empty, create a item shows "No issues"
-    // if (issues.length === 0) {
-    //   // ......
-    // }
   }
 }
 
@@ -138,9 +135,6 @@ export class MessageItem extends vscode.TreeItem {
   ) {
     super(type, collapsibleState);
     switch (type) {
-      // case "loading":
-      //   super(`$(loading~spin) Loading...`, collapsibleState);
-      //   break;
       case "no-data":
         this.label = "No data";
         break;
