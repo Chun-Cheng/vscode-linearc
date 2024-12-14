@@ -122,10 +122,6 @@ export class CategoryItem extends vscode.TreeItem {
     super(name, collapsibleState);
     this.id = `${teamId}.${categoryId}`;
     this.tooltip = `${name}`;
-    // this.iconPath = {
-    //   light: path.join(__dirname, "..", "media", "light", "category.svg"),
-    //   dark: path.join(__dirname, "..", "media", "light", "category.svg")
-    // };
   }
 }
 

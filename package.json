@@ -34,14 +34,6 @@
     },
     "commands": [
       {
-        "command": "linearc.hello-world",
-        "title": "LineArc: Hello World"
-      },
-      {
-        "command": "linearc.debug",
-        "title": "LineArc: Dev Debug"
-      },
-      {
         "command": "linearc.connect",
         "title": "LineArc: Connect to Linear"
       },

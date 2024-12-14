@@ -84,6 +84,7 @@ class Linear {
     return null;
   }
 
+  // useless
   async getMyIssues() : Promise<Issue[] | null> {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {
@@ -195,6 +196,7 @@ class Linear {
     return null;
   }
 
+  // useless
   async getIssueById(id: string) : Promise<Issue | null> {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {
@@ -211,6 +213,7 @@ class Linear {
     return null;
   }
 
+  // useless
   async getWorkflowStates() : Promise<WorkflowState[] | null> {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {
@@ -244,6 +247,7 @@ class Linear {
     return null;
   };
 
+  // useless
   async getTeamMembers(team: Team) {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {
@@ -260,6 +264,7 @@ class Linear {
     return null;
   };
 
+  // useless
   async getIssues() {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {
@@ -276,6 +281,7 @@ class Linear {
     return null;
   }
 
+  // useless
   async getUser(user_id: string) {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {
@@ -292,6 +298,7 @@ class Linear {
     return null;
   }
 
+  // useless
   async getTeam(team_id: string) {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {

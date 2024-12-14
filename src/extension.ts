@@ -21,11 +21,6 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   // commands
-  const helloWorld = vscode.commands.registerCommand("linearc.hello-world", () => {
-    vscode.window.showInformationMessage("Hello World from Linear Sidebar!");
-  });
-  context.subscriptions.push(helloWorld);
-
   const connect = vscode.commands.registerCommand("linearc.connect", async () => {
     await linear.connect();
     issuesProvider.refresh();
@@ -115,12 +110,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(hideReconnect);
   const reconnect = vscode.commands.registerCommand("linearc.reconnect", reconnectFunction);
   context.subscriptions.push(reconnect);
-
-  const debug = vscode.commands.registerCommand("linearc.debug", async () => {
-    const debug_data = await linear.getPriorityValues();
-    vscode.window.showInformationMessage(`${JSON.stringify(debug_data, null, 4)}`);
-  });
-  context.subscriptions.push(debug);
 
   // when user settings is changed
   vscode.workspace.onDidChangeConfiguration(event => {

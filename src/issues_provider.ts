@@ -4,31 +4,10 @@ import { Issue, Team, WorkflowState } from "@linear/sdk";
 import { TeamItem, CategoryItem, IssueItem, MessageItem } from "./issues_items";
 import { IssuePriority, linear } from "./api/linear";
 
-// Issues view
-//   team 1
-//     my issues
-//       issue 1
-//     active issues
-//     all issues
-//   team 2
-
-// Project view
-//   project 1
-//   project 2
-
-// status bar
-//   show issue id of the current branch
-
 
 export class IssuesProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
   private data: (vscode.TreeItem)[] = [];
   private isLoading: boolean = false;
-
-  // private teams: Team[] = [];
-  // private categories: string[] = ["My Issues", "Active Issues", "All Issues"];
-  // private issues: { [teamId: string]: Issue[] } = {};
-
-  // private eventEmitter = new vscode.EventEmitter<IssueItem | undefined | void>();
 
   private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();  // event emitter
   readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
@@ -120,8 +99,6 @@ export class IssuesProvider implements vscode.TreeDataProvider<vscode.TreeItem> 
         new CategoryItem("Active Issues", team.id, []),
         new CategoryItem("All Issues", team.id, []),
       ];
-
-      // TODO: Sort issues by status, priority and updated time, with acceptable performance
 
       return new TeamItem(team, categories);
     }));
