@@ -31,9 +31,9 @@ export class IssueViewer {
     }
     
     // show the issue in a webview
-    const columnToShowIn = vscode.window.activeTextEditor
-      ? vscode.window.activeTextEditor.viewColumn
-      : undefined;
+    const columnToShowIn = IssueViewer.currentPanel
+      ? IssueViewer.currentPanel.viewColumn
+      : vscode.ViewColumn.Two;
 
     if (IssueViewer.currentPanel) {
       // If we already have a panel, show it in the target column
@@ -468,7 +468,7 @@ async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vsc
           </div>
         </div>
 
-        <!-- project -->
+        <!-- project and milestone -->
         <div data-menu-open="false" style="
           min-width: 14px;
           display: inline-flex;
@@ -512,58 +512,16 @@ async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vsc
               overflow: hidden;
               text-overflow: ellipsis;
               line-height: normal;
-            ">${project ? project.name : "-"}${milestone ? `<span style="color: var(--vscode-chat-requestBorder)"> | </span>${milestone.name}` : ""}</span>
-          </div>
-        </div>
-
-        <!-- milestone -->
-        <!--
-        <div data-menu-open="false" style="
-          min-width: 14px;
-          display: inline-flex;
-          flex: initial;
-          flex-direction: row;
-        ">
-          <div role="combobox" type="button" style="
-            min-width: 14px;
-            max-width: 100%;
-            align-items: center;
-            position: relative;
-            display: inline-flex;
-            vertical-align: top;
-            border-radius: 5px;
-            border: 1px solid var(--vscode-chat-requestBorder);
-            background-color: var(--vscode-chat-requestBackground);
-            padding: 2px 8px;
-          ">
-            <span aria-hidden="true" style="
-              margin-right: 4px;
-              display: inline-flex;
-              flex-grow: 0;
-              flex-shrink: 0;
-              align-items: center;
-              justify-content: center;
             ">
-              <img data-theme="light" style="
-                display: inherit;
-                width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
-                height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
-              " src="${""/* projectIconSrc.light TODO: milestone icon*/}">
-              <img data-theme="dark" style="
-                display: none;
-                width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
-                height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
-              " src="${""/* projectIconSrc.dark */}">
+              ${project ? project.name : "-"}
+              ${
+                milestone
+                  ? `<span style="color: var(--vscode-chat-requestBorder)"> | </span>${milestone.name}`
+                  : ""
+              }
             </span>
-            <span style="
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              line-height: normal;
-            ">${milestone ? milestone.name : "-"}</span>
           </div>
         </div>
-        -->
 
         <!-- estimate -->
         <div data-menu-open="false" style="

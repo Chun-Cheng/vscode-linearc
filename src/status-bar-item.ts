@@ -31,18 +31,9 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 }
 
 async function updateStatusBarItem(): Promise<void> {
-  vscode.window.showInformationMessage("updateStatusBarItem");
   const issue = await getCurrentIssue();
   if (issue === undefined) {
     // myStatusBarItem.hide();
-    myStatusBarItem.text = `undefined`;
-    myStatusBarItem.tooltip = `undefined`;
-    myStatusBarItem.command = {
-      command: "linearc.show-issue",
-      title: "Show Issue",
-      arguments: [undefined]
-    };
-    myStatusBarItem.show();
   } else {
     myStatusBarItem.text = `${issue.identifier}`;
     myStatusBarItem.tooltip = `${issue.identifier}: ${issue.title}`;
