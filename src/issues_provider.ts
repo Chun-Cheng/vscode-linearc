@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { Issue, Team, WorkflowState } from "@linear/sdk";
 
 import { TeamItem, CategoryItem, IssueItem, MessageItem } from "./issues_items";
-import { IssuePriority, linear } from "./linear";
+import { IssuePriority, linear } from "./api/linear";
 
 // Issues view
 //   team 1

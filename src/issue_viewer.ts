@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { marked } from "marked";
 import { Issue } from "@linear/sdk";
 
-import { linear } from "./linear";
+import { linear } from "./api/linear";
 
 export class IssueViewer {
   private static currentPanel: vscode.WebviewPanel | undefined = undefined;

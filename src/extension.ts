@@ -3,14 +3,15 @@
 import * as vscode from "vscode";
 
 // import { showIssue } from "./issue_viewer";
-import { linear } from "./linear";
+import { linear } from "./api/linear";
 import { IssuesProvider } from "./issues_provider";
 import { IssueViewer } from './issue_viewer';
 import { TeamItem, IssueItem } from "./issues_items";
+import * as statusBarItem from "./status-bar-item";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 
   // views
   const issuesProvider = new IssuesProvider();
@@ -136,7 +137,9 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(showIssueCommand);
 
   // other initialization
-  linear.connect();
+  await linear.connect();
+
+  statusBarItem.activate(context);
 }
 
 // This method is called when your extension is deactivated

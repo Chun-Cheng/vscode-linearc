@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { Issue, Team, WorkflowState, User } from "@linear/sdk";
 
-import { IssuePriority } from "./linear";
+import { IssuePriority } from "./api/linear";
 
 export class IssueItem extends vscode.TreeItem {
   constructor(
