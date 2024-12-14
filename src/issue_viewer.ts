@@ -8,20 +8,29 @@ export class IssueViewer {
   private static currentPanel: vscode.WebviewPanel | undefined = undefined;
   private static readonly viewType = 'linearc.issueViewer';
 
-  public static async show(context: vscode.ExtensionContext, issueIdentifier: string | undefined): Promise<vscode.WebviewPanel | undefined> {
-    if (issueIdentifier === undefined) {
-      // prompt the user to enter the issue identifier
-      issueIdentifier = await vscode.window.showInputBox({
-        placeHolder: "LIN-12",
-        prompt: "Enter the issue identifier to show"
-      });
+  public static async show(context: vscode.ExtensionContext, issueIdentifier?: string, issue?: Issue): Promise<vscode.WebviewPanel | undefined> {
+    // check input
+    if (issue == undefined) {
+      if (issueIdentifier === undefined) {
+        // prompt the user to enter the issue identifier
+        issueIdentifier = await vscode.window.showInputBox({
+          placeHolder: "LIN-12",
+          prompt: "Enter the issue identifier to show"
+        });
 
-      if (!issueIdentifier) {
-        vscode.window.showErrorMessage("No issue identifier provided.");
-        return;
+        if (!issueIdentifier) {
+          vscode.window.showErrorMessage("No issue identifier provided.");
+          return;
+        }
       }
-    }
 
+      // get issue data
+      issue = await linear.getIssueByIdentifier(issueIdentifier) || undefined;
+    } else {
+      issueIdentifier = issue.identifier;
+    }
+    
+    // show the issue in a webview
     const columnToShowIn = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -34,7 +43,7 @@ export class IssueViewer {
         // update the content
         IssueViewer.currentPanel.title = issueIdentifier;
         IssueViewer.currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
-        IssueViewer.currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, IssueViewer.currentPanel.webview, context.extensionUri);
+        IssueViewer.currentPanel.webview.html = await getIssueWebviewContent(IssueViewer.currentPanel.webview, context.extensionUri, issueIdentifier, issue);
       }
 
     } else {
@@ -55,7 +64,7 @@ export class IssueViewer {
       );
 
       IssueViewer.currentPanel.webview.html = getLoadingWebviewContent();  // loading screen
-      IssueViewer.currentPanel.webview.html = await getIssueWebviewContent(issueIdentifier, IssueViewer.currentPanel.webview, context.extensionUri);
+      IssueViewer.currentPanel.webview.html = await getIssueWebviewContent(IssueViewer.currentPanel.webview, context.extensionUri, issueIdentifier, issue);
 
       // Reset when the panel is disposed
       IssueViewer.currentPanel.onDidDispose(
@@ -91,13 +100,16 @@ function getLoadingWebviewContent() {
     </html>`;
 }
 
-async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.Webview, extensionUri: vscode.Uri) {
+async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri, issueIdentifier: string, issue?: Issue): Promise<string> {
   // Get path to resource on disk
   const mediaPath = vscode.Uri.joinPath(extensionUri, "media");
 
   // TODO: get issue data (title, description, status, priority, assignee, estimate, project, milestone, labels, comments, reactions, etc.)
-  const issue: Issue | undefined | null = await linear.getIssueByIdentifier(issueIdentifier);
+  if (issue === undefined) {
+    issue = await linear.getIssueByIdentifier(issueIdentifier) || undefined;
+  }
 
+  // TODO: never enter this block
   if (issue === null) {
     return `<!DOCTYPE html>
       <html lang="en">
@@ -500,7 +512,7 @@ async function getIssueWebviewContent(issueIdentifier: string, webview: vscode.W
               overflow: hidden;
               text-overflow: ellipsis;
               line-height: normal;
-            ">${project ? project.name : "-"}${milestone ? `<span style="color: var(--vscode-editorLineNumber-foreground)"> | </span>${milestone.name}` : ""}</span>
+            ">${project ? project.name : "-"}${milestone ? `<span style="color: var(--vscode-chat-requestBorder)"> | </span>${milestone.name}` : ""}</span>
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 // The module "vscode" contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
+import { Issue } from "@linear/sdk";
 
 // import { showIssue } from "./issue_viewer";
 import { linear } from "./api/linear";
@@ -131,8 +132,8 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   // issue viewer
-  let showIssueCommand = vscode.commands.registerCommand('linearc.show-issue', (issueId) => {
-    IssueViewer.show(context, issueId);
+  let showIssueCommand = vscode.commands.registerCommand('linearc.show-issue', (issueId: string, issue?: Issue) => {
+    IssueViewer.show(context, issueId, issue);
   });
   context.subscriptions.push(showIssueCommand);
 

@@ -87,7 +87,7 @@ export class IssueItem extends vscode.TreeItem {
     this.command = {
       command: "linearc.show-issue",
       title: "Show Issue",
-      arguments: [issue.identifier]
+      arguments: [issue.identifier, issue]
     }; // open issue content when the issue item is selected
     this.contextValue = "issue";
   }
