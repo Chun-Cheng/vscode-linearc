@@ -4,12 +4,11 @@ import { Issue } from '@linear/sdk';
 import { GitExtension } from "./api/git";
 import { linear } from "./api/linear";
 
-let myStatusBarItem: vscode.StatusBarItem;
+let myStatusBarItem: vscode.StatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
 
 export function activate({ subscriptions }: vscode.ExtensionContext) {
 
   // create a new status bar item that we can now manage
-  myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
   subscriptions.push(myStatusBarItem);
 
   // register some listener that make sure the status bar item always up-to-date
@@ -30,10 +29,10 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
   // updateStatusBarItem();
 }
 
-async function updateStatusBarItem(): Promise<void> {
+export async function updateStatusBarItem(): Promise<void> {
   const issue = await getCurrentIssue();
   if (issue === undefined) {
-    // myStatusBarItem.hide();
+    myStatusBarItem.hide();
   } else {
     myStatusBarItem.text = `${issue.identifier}`;
     myStatusBarItem.tooltip = `${issue.identifier}: ${issue.title}`;

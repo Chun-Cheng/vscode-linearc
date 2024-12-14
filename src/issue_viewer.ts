@@ -289,11 +289,19 @@ async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vsc
   };
   
   // labels
-  const labelsConnection = await issue.labels();  // TODO: implement this
+  const labelsConnection = await issue.labels();
   const labels = labelsConnection.nodes;
   
-  
-
+  // cycle
+  const cycleIconSrc = {
+    light: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, "light", "cycle.svg")),
+    dark: webview.asWebviewUri(vscode.Uri.joinPath(mediaPath, "dark", "cycle.svg"))
+  };
+  let cycleName: string | undefined = undefined;
+  const cycleConnection = await issue.cycle;
+  if (cycleConnection) {
+    cycleName = cycleConnection?.name || `${cycleConnection?.number}`; //`Cycle ${cycleConnection?.number}`;
+  }
   
 
   // return page content
@@ -468,7 +476,7 @@ async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vsc
           </div>
         </div>
 
-        <!-- project and milestone -->
+        <!-- project -->
         <div data-menu-open="false" style="
           min-width: 14px;
           display: inline-flex;
@@ -514,11 +522,55 @@ async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vsc
               line-height: normal;
             ">
               ${project ? project.name : "-"}
-              ${
-                milestone
-                  ? `<span style="color: var(--vscode-chat-requestBorder)"> | </span>${milestone.name}`
-                  : ""
-              }
+            </span>
+          </div>
+        </div>
+
+        <!-- milestone -->
+        <div data-menu-open="false" style="
+          min-width: 14px;
+          display: inline-flex;
+          flex: initial;
+          flex-direction: row;
+        ">
+          <div role="combobox" type="button" style="
+            min-width: 14px;
+            max-width: 100%;
+            align-items: center;
+            position: relative;
+            display: inline-flex;
+            vertical-align: top;
+            border-radius: 5px;
+            border: 1px solid var(--vscode-chat-requestBorder);
+            background-color: var(--vscode-chat-requestBackground);
+            padding: 2px 8px;
+          ">
+            <span aria-hidden="true" style="
+              margin-right: 4px;
+              display: inline-flex;
+              flex-grow: 0;
+              flex-shrink: 0;
+              align-items: center;
+              justify-content: center;
+            ">
+              <img data-theme="light" style="
+                display: inherit;
+                width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+              " src="${milestoneIconSrc.light}">
+              <img data-theme="dark" style="
+                display: none;
+                width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+              " src="${milestoneIconSrc.dark}">
+            </span>
+            <span style="
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              line-height: normal;
+            ">
+              ${ milestone ? milestone.name : "-" }
             </span>
           </div>
         </div>
@@ -620,6 +672,57 @@ async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vsc
         }
 
         <!-- cycle -->
+        ${ 
+          cycleName
+            ? `
+                <div data-menu-open="false" style="
+                  min-width: 14px;
+                  display: inline-flex;
+                  flex: initial;
+                  flex-direction: row;
+                ">
+                  <div role="combobox" type="button" style="
+                    min-width: 14px;
+                    max-width: 100%;
+                    align-items: center;
+                    position: relative;
+                    display: inline-flex;
+                    vertical-align: top;
+                    border-radius: 5px;
+                    border: 1px solid var(--vscode-chat-requestBorder);
+                    background-color: var(--vscode-chat-requestBackground);
+                    padding: 2px 8px;
+                  ">
+                    <span aria-hidden="true" style="
+                      margin-right: 4px;
+                      display: inline-flex;
+                      flex-grow: 0;
+                      flex-shrink: 0;
+                      align-items: center;
+                      justify-content: center;
+                    ">
+                      <img data-theme="light" style="
+                        display: inherit;
+                        width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                        height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                      " src="${cycleIconSrc.light}">
+                      <img data-theme="dark" style="
+                        display: none;
+                        width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                        height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+                      " src="${cycleIconSrc.dark}">
+                    </span>
+                    <span style="
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      line-height: normal;
+                    ">${cycleName}</span>
+                  </div>
+                </div>
+              `
+            : ""
+        }
 
 
       </div>

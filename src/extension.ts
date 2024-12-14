@@ -24,6 +24,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const connect = vscode.commands.registerCommand("linearc.connect", async () => {
     await linear.connect();
     issuesProvider.refresh();
+    statusBarItem.updateStatusBarItem();
   });
   context.subscriptions.push(connect);
 
@@ -104,7 +105,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // connect to another Linear organization
   const reconnectFunction = async () => {
     await vscode.commands.executeCommand("linear-connect.logout");
-    linear.connect();
+    vscode.commands.executeCommand("linearc.connect");
   };
   const hideReconnect = vscode.commands.registerCommand("linearc.hide-reconnect", reconnectFunction);
   context.subscriptions.push(hideReconnect);
