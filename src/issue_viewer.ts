@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { marked } from "marked";
-import { Issue } from "@linear/sdk";
+import { Issue, User, IssueHistory, Comment } from "@linear/sdk";
 
 import { linear } from "./api/linear";
 
@@ -302,10 +302,42 @@ async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vsc
   if (cycleConnection) {
     cycleName = cycleConnection?.name || `${cycleConnection?.number}`; //`Cycle ${cycleConnection?.number}`;
   }
+
+  // reaction
+
+  // activity
+  
+  // get history and comments data
+  const historyConnection = await issue.history();
+  const history = historyConnection.nodes;
+  const commentsConnection = await issue.comments();
+  const comments = commentsConnection.nodes;
+
+  // put history data and comments data together
+  const activities: { user: User | undefined, time: Date, activity: IssueHistory | Comment }[] = [];
+  history.forEach(async h => {
+    activities.push({
+      user: h.actorId 
+        ? await linear.getUserById(h.actorId) || undefined 
+        : undefined,
+      time: h.createdAt,
+      activity: h
+    });
+  });
+  comments.forEach(async c => {
+    activities.push({
+      user: await c.user,
+      time: c.createdAt,
+      activity: c
+    });
+  });
+
+  // sort activities by time
+  activities.sort((a, b) => a.time.getTime() - b.time.getTime());
   
 
   // return page content
-  return `<!DOCTYPE html>
+  return await `<!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
@@ -570,7 +602,7 @@ async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vsc
               text-overflow: ellipsis;
               line-height: normal;
             ">
-              ${ milestone ? milestone.name : "-" }
+              ${milestone ? milestone.name : "-"}
             </span>
           </div>
         </div>
@@ -732,15 +764,54 @@ async function getIssueWebviewContent(webview: vscode.Webview, extensionUri: vsc
       ">
       <div>
         ${
-          issue["description"]
+          issue.description
             ? marked.parse(issue.description)
             : '<i style="color: var(--vscode-editorLineNumber-foreground)">No description</i>' // no description
         }
       </div>
+      <!-- reaction -->
+      <!-- sub-issues -->
       <hr style="
         border-color: var(--vscode-widget-border);
         border-width: 1px 0 0;
       ">
+      <!-- activity (history and comments) -->
+      <h3>Activity</h3>
+
+      <b>history</b>
+
+
+      <b>comment</b>
+      <div style="
+        background-color: var(--vscode-editorWidget-background);
+        border: 1px solid var(--vscode-editorWidget-border);
+      ">
+        <div>
+          <!-- user.avatar -->
+          <img data-theme="light" style="
+            display: inherit;
+            width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+            height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+            border-radius: 50%;
+          " src="${assigneeIconSrc.light}">
+          <img data-theme="dark" style="
+            display: none;
+            width: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+            height: ${vscode.workspace.getConfiguration().get("editor.fontSize")}px;
+            border-radius: 50%;
+          " src="${assigneeIconSrc.dark}">
+          <!-- user.name -->
+          <!-- time -->
+          <!-- actions/menu -->
+        </div>
+        <div>
+          <!-- comment -->
+        </div>
+        <div>
+          <!-- reactions -->
+        </div>
+      </div>
+
     </body>
     </html>`;
 };

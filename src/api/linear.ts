@@ -281,16 +281,15 @@ class Linear {
     return null;
   }
 
-  // useless
-  async getUser(user_id: string) {
+  async getUserById(userId: string) {
     // check if the user is connected to Linear
     if (await this.connectCheckPrompt() === false) {
-      return;
+      return null;
     }
 
     // get data
     try {
-      const user = await this.linearClient!.user(user_id);
+      const user = await this.linearClient!.user(userId);
       return user;
     } catch (error) {
       vscode.window.showErrorMessage("Failed to get data from Linear. (linear.getUser)");

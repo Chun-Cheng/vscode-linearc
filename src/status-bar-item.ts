@@ -26,7 +26,7 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
   }
 
   // update status bar item once at start
-  // updateStatusBarItem();
+  updateStatusBarItem();
 }
 
 export async function updateStatusBarItem(): Promise<void> {
